@@ -1,7 +1,9 @@
 frappe.ui.form.on("Work Order",{
     refresh: function(frm){
-        frm.add_custom_button(__('Adjust Specific Gravity'),function() {
-        });
+        if(frm.doc.docstatus == 1){
+            frm.add_custom_button(__('Adjust Specific Gravity'),function() {
+            });
+        }
     },
 
     after_save: function(frm){
@@ -14,7 +16,7 @@ frappe.ui.form.on("Work Order",{
                 "callback": function(r){
                 }
                 })
-            refresh_many(['rm_weight', 'fg_weight','bom_weight','specific_gravity']);
+            refresh_many(['rm_weight','fg_weight','bom_weight','specific_gravity']);
         }
     },
 

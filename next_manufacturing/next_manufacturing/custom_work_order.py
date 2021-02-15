@@ -49,6 +49,12 @@ def after_save(doc_name):
         doc.specific_gravity = 0
     doc.bom_weight = bmw
 
+    if sg > 0 and cnt > 0:
+        doc.specific_gravity = sg/cnt
+        doc.bom_weight = bmw
+    else:
+        frappe.throw("Specific Gravity is Zero or There is Zero Item in Table")
+
     rm = 0.0
     for itm in doc.required_items:
         if itm.type == "RM":
@@ -61,4 +67,9 @@ def after_save(doc_name):
         doc.yeild = ((doc.fg_weight / doc.rm_weight) * 100)
     else:
         doc.yeild = 0
+
+    if rm > 0:
+        doc.yeild = ((doc.fg_weight / doc.rm_weight) * 100)
+    else:
+        frappe.throw("Raw Material Weight is Zero")
     doc.save()
