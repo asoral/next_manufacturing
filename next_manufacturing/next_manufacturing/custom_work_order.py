@@ -27,7 +27,7 @@ def after_insert(self,method):
     self.fg_weight = self.qty * self.weight_per_unit
     if rm > 0:
         self.yeild = ((self.fg_weight / self.rm_weight) * 100)
-    self.save()
+    # self.save()
 
 @frappe.whitelist()
 def after_save(doc_name):

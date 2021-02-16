@@ -96,7 +96,8 @@ override_doctype_class = {
 
 doc_events = {
 	"Work Order":{
-		"after_insert": "next_manufacturing.next_manufacturing.custom_work_order.after_insert"
+		"after_insert": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert"
 	},
 }
 

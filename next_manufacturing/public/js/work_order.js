@@ -6,19 +6,19 @@ frappe.ui.form.on("Work Order",{
         }
     },
 
-    after_save: function(frm){
-        if(frm.doc.docstatus != 1){
-            frm.call({
-                'method': "next_manufacturing.next_manufacturing.custom_work_order.after_save",
-                "args": {
-                    doc_name: frm.doc.name
-                },
-                "callback": function(r){
-                }
-                })
-            refresh_many(['rm_weight','fg_weight','bom_weight','specific_gravity']);
-        }
-    },
+//    before_save: function(frm){
+//        if(frm.doc.docstatus != 1 && frm.doc.__islocal != 1){
+//            frm.call({
+//                'method': "next_manufacturing.next_manufacturing.custom_work_order.after_save",
+//                "args": {
+//                    doc_name: frm.doc.name
+//                },
+//                "callback": function(r){
+//                }
+//                })
+//            refresh_many(['rm_weight','fg_weight','bom_weight','specific_gravity']);
+//        }
+//    },
 
 //    set_specific_gravity_2: function(frm){
 //         //raw material weight
