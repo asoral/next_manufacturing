@@ -14,9 +14,9 @@ def after_insert(self,method):
             sg += itm.specific_gravity
             cnt += 1
             bmw += itm.required_qty * itm.weight_per_unit
-
-    self.specific_gravity = sg/cnt
-    self.bom_weight = bmw
+    if sg > 0 and cnt > 0:
+        self.specific_gravity = sg/cnt
+        self.bom_weight = bmw
 
     rm = 0.0
     for itm in self.required_items:
@@ -25,8 +25,8 @@ def after_insert(self,method):
     self.rm_weight = rm
 
     self.fg_weight = self.qty * self.weight_per_unit
-    self.yeild = ((self.fg_weight / self.rm_weight) * 100)
-
+    if rm > 0:
+        self.yeild = ((self.fg_weight / self.rm_weight) * 100)
     self.save()
 
 @frappe.whitelist()
@@ -45,8 +45,8 @@ def after_save(doc_name):
     if sg > 0 and cnt > 0:
         doc.specific_gravity = sg/cnt
         doc.bom_weight = bmw
-    else:
-        frappe.throw("Specific Gravity is Zero or There is Zero Item in Table")
+    # else:
+    #     frappe.throw("Specific Gravity is Zero or There is Zero Item in Table")
 
     rm = 0.0
     for itm in doc.required_items:
@@ -59,6 +59,6 @@ def after_save(doc_name):
 
     if rm > 0:
         doc.yeild = ((doc.fg_weight / doc.rm_weight) * 100)
-    else:
-        frappe.throw("Raw Material Weight is Zero")
+    # else:
+    #     frappe.throw("Raw Material Weight is Zero")
     doc.save()
