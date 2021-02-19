@@ -62,3 +62,20 @@ def after_save(doc_name):
     # else:
     #     frappe.throw("Raw Material Weight is Zero")
     doc.save()
+
+
+@frappe.whitelist()
+def add_additional_fabric(doc_name, item_code, required_qty):
+    print("---------------doc_name",doc_name, item_code, required_qty)
+    wo = frappe.get_doc("Work Order", doc_name)
+    wo.append("required_items", {
+        "item_code":item_code,
+        "source_warehouse": wo.source_warehouse,
+        "required_qty":required_qty
+    })
+    wo.flags.ignore_validate_update_after_submit = True
+    wo.set_available_qty()
+    # wo.validate()
+    wo.save(ignore_permissions=True)
+
+    return True

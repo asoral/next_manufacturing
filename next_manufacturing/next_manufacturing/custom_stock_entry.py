@@ -60,7 +60,7 @@ class CustomStockEntry(StockEntry):
                     if self.work_order:
                         if enabled:
                             if is_finish_batch_series == 'Use Work Order as Series':
-                                batch_name = make_autoname(str(self.name) + "-.##")
+                                batch_name = make_autoname(str(self.work_order) + "-.##")
                             if is_finish_batch_series == 'Create New':
                                 batch_name = make_autoname(batch_series)
 
