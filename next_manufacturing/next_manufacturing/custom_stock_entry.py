@@ -4,6 +4,7 @@ import frappe.defaults
 from frappe.model.naming import make_autoname
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 from erpnext.stock.doctype.batch.batch import set_batch_nos
+from frappe.utils import flt
 
 class CustomStockEntry(StockEntry):
     def validate(self):
@@ -71,3 +72,38 @@ class CustomStockEntry(StockEntry):
                         supplier=getattr(self, 'supplier', None),
                         reference_doctype=self.doctype,
                         reference_name=self.name)).insert().name
+
+    def get_items(self):
+        super(CustomStockEntry, self).get_items()
+        if self.purpose == "Manufacture":
+            wo = frappe.get_doc("Work Order",self.work_order)
+            wo_lines = frappe.get_list("Work Order Item",filters={"parent": self.work_order, "additional_material":1},fields=['name'], as_list=1)
+            for res in wo_lines:
+                wo_line_doc = frappe.get_doc("Work Order Item",res[0])
+                expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
+                item_name, stock_uom, description = frappe.db.get_values("Item", wo_line_doc.item_code, ["item_name", "stock_uom", "description"])[0]
+
+                item_expense_account, item_cost_center = frappe.db.get_value("Item Default",{'parent': wo_line_doc.item_code, 'company': wo.company},
+                                                                             ["expense_account", "buying_cost_center"])
+
+                se_child = self.append('items')
+                se_child.s_warehouse = wo.wip_warehouse
+                se_child.item_code = wo_line_doc.item_code
+                se_child.uom = stock_uom
+                se_child.stock_uom = stock_uom
+                se_child.basic_rate = wo_line_doc.rate
+                se_child.qty = wo_line_doc.transferred_qty
+                se_child.allow_alternative_item = wo_line_doc.allow_alternative_item
+                se_child.cost_center = item_cost_center or cost_center
+                se_child.is_scrap_item = 0
+
+                for field in ["idx", "po_detail", "original_item",
+                              "expense_account", "description", "item_name"]:
+                    if wo_line_doc.get(field):
+                        se_child.set(field, wo_line_doc.get(field))
+                # in stock uom
+                se_child.conversion_factor = 1
+                se_child.transfer_qty = flt(wo_line_doc.transferred_qty * se_child.conversion_factor, se_child.precision("qty"))
+
+
+
