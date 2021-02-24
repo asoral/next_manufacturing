@@ -15,7 +15,16 @@ frappe.ui.form.on("Work Order",{
                                     label: __("Item"),
                                     options: "Item",
                                     fieldname: "item_code",
-                                    reqd:1
+                                    reqd:1,
+                                    get_query: () => {
+                                        return {
+                                            query: "next_manufacturing.next_manufacturing.custom_work_order.get_filtered_item",
+                                            filters : {
+                                                "is_stock_item": 1,
+                                                "bom": frm.doc.bom_no
+                                            }
+                                        }
+                                    }
                                 },
                                 {
                                     "fieldtype": "Column Break"
@@ -25,16 +34,7 @@ frappe.ui.form.on("Work Order",{
                                     label: __("Required Qty"),
                                     fieldname: "required_qty",
                                     reqd:1
-                                },
-                                {
-                                    "fieldtype": "Column Break"
-                                },
-                                {
-                                    fieldtype: "Currency",
-                                    label: __("Rate"),
-                                    fieldname: "rate",
-                                    reqd:1
-                                },
+                                }
                             ],
                             function(data) {
                                 frm.call({
@@ -43,7 +43,6 @@ frappe.ui.form.on("Work Order",{
                                         doc_name: frm.doc.name,
                                         item_code:data.item_code,
                                         required_qty:data.required_qty,
-                                        rate:data.rate,
                                     },
                                     callback: function(r){
                                         frm.reload_doc()

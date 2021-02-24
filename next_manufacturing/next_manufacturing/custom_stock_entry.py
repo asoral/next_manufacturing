@@ -104,6 +104,8 @@ class CustomStockEntry(StockEntry):
                 # in stock uom
                 se_child.conversion_factor = 1
                 se_child.transfer_qty = flt(wo_line_doc.transferred_qty * se_child.conversion_factor, se_child.precision("qty"))
+                self.set_actual_qty()
+                self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
 
 

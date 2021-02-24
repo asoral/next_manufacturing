@@ -64,23 +64,33 @@ def after_save(doc_name):
 
 
 @frappe.whitelist()
-def add_additional_fabric(doc_name, item_code, required_qty,rate):
+def add_additional_fabric(doc_name, item_code, required_qty):
     frappe.clear_cache()
     wo = frappe.get_doc("Work Order", doc_name)
-    wo.append("required_items", {
-        "item_code":item_code,
-        "source_warehouse": wo.source_warehouse,
-        "required_qty":required_qty,
-        "rate":rate,
-        "additional_material": 1,
-        "include_item_in_manufacturing": 1
-    })
-    wo.flags.ignore_validate_update_after_submit = True
-    wo.set_available_qty()
-    wo.save(ignore_permissions=True)
+    wo_line = frappe.get_list("Work Order Item", filters={"item_code": item_code})
+    if wo_line:
+        woi_doc = frappe.get_doc("Work Order Item",wo_line[0].name)
+        if woi_doc.required_qty:
+            woi_doc.required_qty += float(required_qty)
+        else:
+            woi_doc.required_qty = required_qty
+        wo.flags.ignore_validate_update_after_submit = True
+        wo.set_available_qty()
+        wo.save(ignore_permissions=True)
+    else:
+        wo.append("required_items", {
+            "item_code":item_code,
+            "source_warehouse": wo.source_warehouse,
+            "required_qty":required_qty,
+            "additional_material": 1,
+            "include_item_in_manufacturing": 1
+        })
+        wo.flags.ignore_validate_update_after_submit = True
+        wo.set_available_qty()
+        wo.save(ignore_permissions=True)
+
     stock_entry = frappe.new_doc("Stock Entry")
     stock_entry.work_order = wo.name
-
     stock_entry.stock_entry_type = "Material Transfer for Manufacture"
     expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
     item_name, stock_uom, description = frappe.db.get_values("Item", item_code, ["item_name", "stock_uom", "description"])[0]
@@ -99,12 +109,26 @@ def add_additional_fabric(doc_name, item_code, required_qty,rate):
     se_item.description = description
     se_item.uom = stock_uom
     se_item.stock_uom = stock_uom
-    se_item.basic_rate = rate
-    # se_item.batch_no = item.lot_no
     se_item.expense_account = item_expense_account or expense_account
     se_item.cost_center = item_cost_center or cost_center
 
     # in stock uom
     se_item.conversion_factor = 1.00
+    stock_entry.set_actual_qty()
+    stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
     return stock_entry.as_dict()
+
+
+@frappe.whitelist()
+@frappe.validate_and_sanitize_search_inputs
+def get_filtered_item(doctype, txt, searchfield, start, page_len, filters):
+    if filters:
+        bom = frappe.get_doc("BOM",filters.get('bom'))
+        if bom.allow_adding_items:
+            items = frappe.db.sql("select distinct name,item_name from `tabItem` where is_stock_item = 1 and disabled = 0")
+            return items
+        else:
+            items = frappe.db.sql("""select distinct i.item_code,i.item_name from `tabBOM` as b inner join `tabBOM Item` as i on i.parent = b.name 
+                        where allowed_to_change_qty_in_wo = 1""")
+            return items
