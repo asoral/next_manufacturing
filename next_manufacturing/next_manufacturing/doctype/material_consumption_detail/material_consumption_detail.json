@@ -1,0 +1,115 @@
+{
+ "actions": [],
+ "creation": "2021-02-25 18:18:04.463677",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "uom",
+  "warehouse",
+  "batch",
+  "column_break_5",
+  "balance_qty",
+  "expiry_date_batch",
+  "life_left_batch",
+  "qty_to_consume",
+  "consume_item"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item",
+   "options": "Item",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "batch",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Batch",
+   "options": "Batch",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "balance_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Balance Qty",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "expiry_date_batch",
+   "fieldtype": "Date",
+   "label": "Expiry Date Batch",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "life_left_batch",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Life Left Batch",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty_to_consume",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty to Consume"
+  },
+  {
+   "fieldname": "consume_item",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Consume Item",
+   "options": "Materials to Consume Items",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2021-02-26 16:53:42.781026",
+ "modified_by": "Administrator",
+ "module": "Next Manufacturing",
+ "name": "Material Consumption Detail",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

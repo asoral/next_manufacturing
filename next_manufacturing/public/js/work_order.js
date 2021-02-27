@@ -1,5 +1,59 @@
 frappe.ui.form.on("Work Order",{
+    onload: function(frm){
+        if(frm.doc.docstatus == 4){
+            frm.page.set_primary_action(__('Cancel'), () => {
+                frm.savecancel(this);
+            });
+        }
+    },
     refresh: function(frm){
+        if(frm.doc.docstatus == 4){
+            frm.page.set_primary_action(__('Cancel'), () => {
+                frm.savecancel(this);
+            });
+
+            frm.trigger('show_progress_for_items');
+			frm.trigger('show_progress_for_operations');
+
+			frm.add_custom_button(__('Create Pick List'), function() {
+                erpnext.work_order.create_pick_list(frm);
+            });
+
+            if(frm.doc.operations && frm.doc.operations.length
+			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
+			{
+			    const not_completed = frm.doc.operations.filter(d => {
+				if(d.status != 'Completed') {
+                        return true;
+                    }
+                });
+
+                if(not_completed && not_completed.length) {
+                    frm.add_custom_button(__('Create Job Card'), () => {
+                        frm.trigger("make_job_card");
+                    }).addClass('btn-primary');
+                }
+			}
+
+
+            if(frm.doc.transfer_material_against != 'Job Card')
+            {
+                frm.add_custom_button(__('Consume Material'),function() {
+                frappe.call({
+                        method: "next_manufacturing.next_manufacturing.custom_work_order.make_consume_material",
+                        args: {
+                          doc_name: frm.doc.name
+                        },
+                        callback: function(r){
+                            if (r.message) {
+                                var doc = frappe.model.sync(r.message)[0];
+                                frappe.set_route("Form", doc.doctype, doc.name);
+                            }
+                        }
+                    });
+                }).addClass('btn-primary');
+            }
+        }
         if(frm.doc.docstatus == 1){
             frm.add_custom_button(__('Adjust Specific Gravity'),function() {
             });

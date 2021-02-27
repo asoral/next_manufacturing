@@ -34,8 +34,9 @@ app_license = "MIT"
 
 # include js in doctype views
 doctype_js = {
-	"BOM" : "public/js/bom.js",
-	"Work Order": "public/js/work_order.js"
+	"BOM": "public/js/bom.js",
+	"Work Order": "public/js/work_order.js",
+	"Job Card": "public/js/job_card.js",
 }
 # doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
@@ -87,7 +88,8 @@ doctype_js = {
 # Override standard doctype classes
 
 override_doctype_class = {
-	"Stock Entry": "next_manufacturing.next_manufacturing.custom_stock_entry.CustomStockEntry"
+	"Stock Entry": "next_manufacturing.next_manufacturing.custom_stock_entry.CustomStockEntry",
+	"Work Order": "next_manufacturing.next_manufacturing.custom_work_order.CustomWorkOrder"
 }
 
 # Document Events
@@ -97,7 +99,8 @@ override_doctype_class = {
 doc_events = {
 	"Work Order":{
 		"after_insert": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
-		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert"
+		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status"
 	},
 }
 
@@ -130,16 +133,17 @@ doc_events = {
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "next_manufacturing.event.get_events"
-# }
+override_whitelisted_methods = {
+	"erpnext.manufacturing.doctype.work_order.work_order.create_pick_list": "next_manufacturing.next_manufacturing.custom_work_order.create_pick_list"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,
 # along with any modifications made in other Frappe apps
-# override_doctype_dashboards = {
-# 	"Task": "next_manufacturing.task.get_dashboard_data"
-# }
+override_doctype_dashboards = {
+	"Work Order": "next_manufacturing.next_manufacturing.work_order_dashboard.get_data",
+	"Job Card": "next_manufacturing.next_manufacturing.job_card_dashboard.get_data"
+}
 
 # exempt linked doctypes from being automatically cancelled
 #

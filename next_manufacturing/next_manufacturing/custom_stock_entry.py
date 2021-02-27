@@ -5,6 +5,7 @@ from frappe.model.naming import make_autoname
 from erpnext.stock.doctype.stock_entry.stock_entry import StockEntry
 from erpnext.stock.doctype.batch.batch import set_batch_nos
 from frappe.utils import flt
+from frappe import _
 
 class CustomStockEntry(StockEntry):
     def validate(self):
@@ -107,5 +108,28 @@ class CustomStockEntry(StockEntry):
                 self.set_actual_qty()
                 self.calculate_rate_and_amount(raise_error_if_no_rate=False)
 
+    def update_work_order(self):
+        def _validate_work_order(pro_doc):
+            if flt(pro_doc.docstatus) not in [1, 4]:
+                frappe.throw(_("Work Order {0} must be submitted").format(self.work_order))
 
+            if pro_doc.status == 'Stopped':
+                frappe.throw(_("Transaction not allowed against stopped Work Order {0}").format(self.work_order))
+
+        if self.job_card:
+            job_doc = frappe.get_doc('Job Card', self.job_card)
+            job_doc.set_transferred_qty(update_status=True)
+
+        if self.work_order:
+            pro_doc = frappe.get_doc("Work Order", self.work_order)
+            _validate_work_order(pro_doc)
+            pro_doc.run_method("update_status")
+
+            if self.fg_completed_qty:
+                pro_doc.run_method("update_work_order_qty")
+                if self.purpose == "Manufacture":
+                    pro_doc.run_method("update_planned_qty")
+
+            if not pro_doc.operations:
+                pro_doc.set_actual_dates()
 
