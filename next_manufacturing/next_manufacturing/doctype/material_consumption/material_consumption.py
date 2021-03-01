@@ -43,9 +43,9 @@ class MaterialConsumption(Document):
 
     def mak_stock_entry(self):
         if self.type == "Manual":
+            lst = []
             for res in self.materials_to_consume:
-                lst = []
-                if not res.qty_issued:
+                if not res.status == 'Not Assigned':
                     lst.append(0)
                 else:
                     lst.append(1)
