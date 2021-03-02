@@ -53,6 +53,23 @@ frappe.ui.form.on("Work Order",{
                     });
                 }).addClass('btn-primary');
             }
+            if(frm.doc.status == 'In Process')
+            {
+                frm.add_custom_button(__('Material Produce'),function() {
+                frappe.call({
+                        method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_produce",
+                        args: {
+                          doc_name: frm.doc.name
+                        },
+                        callback: function(r){
+                            if (r.message) {
+                                var doc = frappe.model.sync(r.message)[0];
+                                frappe.set_route("Form", doc.doctype, doc.name);
+                            }
+                        }
+                    });
+                }).addClass('btn-primary');
+            }
         }
         if(frm.doc.docstatus == 1){
             frm.add_custom_button(__('Adjust Specific Gravity'),function() {

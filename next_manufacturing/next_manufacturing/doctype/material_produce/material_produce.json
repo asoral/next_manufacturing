@@ -1,0 +1,128 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2021-03-01 17:15:31.451217",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "naming_series",
+  "work_order",
+  "column_break_5",
+  "t_warehouse",
+  "company",
+  "material_produce_item_section",
+  "material_produce_item",
+  "material_produce_details_section",
+  "material_produce_details",
+  "add_details",
+  "section_break_7",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Sereis",
+   "options": "MP-.YYYY.-.####",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Material Produce",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Work Order",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "t_warehouse",
+   "fieldtype": "Link",
+   "label": "Target Warehosue",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "material_produce_item_section",
+   "fieldtype": "Section Break",
+   "label": "Material Produce Item"
+  },
+  {
+   "columns": 11,
+   "fieldname": "material_produce_item",
+   "fieldtype": "Table",
+   "label": "Material Produce Item",
+   "options": "Material Produce Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "material_produce_details_section",
+   "fieldtype": "Section Break",
+   "label": "Material Produce Details"
+  },
+  {
+   "columns": 11,
+   "fieldname": "material_produce_details",
+   "fieldtype": "Table",
+   "label": "Material Produce Details",
+   "options": "Material Produce Detail"
+  },
+  {
+   "bold": 1,
+   "fieldname": "add_details",
+   "fieldtype": "Button",
+   "label": "Add Details"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2021-03-02 11:39:44.819260",
+ "modified_by": "Administrator",
+ "module": "Next Manufacturing",
+ "name": "Material Produce",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

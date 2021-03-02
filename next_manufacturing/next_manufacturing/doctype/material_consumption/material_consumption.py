@@ -45,7 +45,7 @@ class MaterialConsumption(Document):
         if self.type == "Manual":
             lst = []
             for res in self.materials_to_consume:
-                if not res.status == 'Not Assigned':
+                if res.status == 'Not Assigned':
                     lst.append(0)
                 else:
                     lst.append(1)
@@ -91,6 +91,8 @@ class MaterialConsumption(Document):
                 stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
                 stock_entry.insert(ignore_permissions=True)
                 stock_entry.validate()
+                stock_entry.flags.ignore_validate_update_after_submit = True
+                stock_entry.submit()
         else:
             stock_entry = frappe.new_doc("Stock Entry")
             stock_entry.work_order = self.work_order
@@ -124,7 +126,7 @@ class MaterialConsumption(Document):
                 se_item.expense_account = item_expense_account or expense_account
                 se_item.cost_center = item_cost_center or cost_center
                 # in stock uom
-                se_item.conversion_factor = 1.00
+                se_item.conversion_factor = res.conversion_factor
                 total_transfer_qty += res.picked_qty
             stock_entry.from_bom = 1
             stock_entry.fg_completed_qty = total_transfer_qty
@@ -132,6 +134,8 @@ class MaterialConsumption(Document):
             stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
             stock_entry.insert(ignore_permissions=True)
             stock_entry.validate()
+            stock_entry.flags.ignore_validate_update_after_submit = True
+            stock_entry.submit()
 
 
 

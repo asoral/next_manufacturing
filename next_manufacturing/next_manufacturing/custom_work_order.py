@@ -276,9 +276,43 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
             'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
         },
     }, target_doc)
-
     doc.for_qty = for_qty
-
     doc.set_item_locations()
-
     return doc
+
+@frappe.whitelist()
+def make_material_produce(doc_name):
+    wo_doc = frappe.get_doc('Work Order', doc_name)
+    mc = frappe.new_doc("Material Produce")
+    mc.work_order = wo_doc.name
+    mc.t_warehouse = wo_doc.fg_warehouse
+    mc.company = wo_doc.company
+    item_doc = frappe.get_doc("Item", wo_doc.production_item)
+    mc.append("material_produce_item", {
+        "item_code": wo_doc.production_item,
+        "item_name": wo_doc.item_name,
+        "item_group": item_doc.item_group,
+        "s_warehouse": wo_doc.wip_warehouse,
+        "uom": item_doc.stock_uom,
+        "status": "Not Set",
+        "type": "FG",
+        "scheduled_qty": wo_doc.qty,
+        "qty_produced": wo_doc.qty,
+        "qty_already_produced": wo_doc.produced_qty
+    })
+
+    bom = frappe.get_doc("BOM",wo_doc.bom_no)
+    for res in bom.scrap_items:
+        item_doc = frappe.get_doc("Item", res.item_code)
+        mc.append("material_produce_item", {
+            "item_code": res.item_code,
+            "item_name": item_doc.item_name,
+            "item_group": item_doc.item_group,
+            "s_warehouse": wo_doc.wip_warehouse,
+            "uom": res.stock_uom,
+            "status": "Not Set",
+            "type": "Scrap",
+            "scheduled_qty": res.stock_qty
+        })
+    mc.insert(ignore_permissions=True)
+    return mc.as_dict()

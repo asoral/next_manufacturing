@@ -1,0 +1,147 @@
+{
+ "actions": [],
+ "creation": "2021-03-01 18:26:02.678403",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_code",
+  "item_name",
+  "item_group",
+  "s_warehouse",
+  "uom",
+  "column_break_5",
+  "scheduled_qty",
+  "qty_produced",
+  "status",
+  "type",
+  "qty_already_produced",
+  "show_details",
+  "datas_section",
+  "data"
+ ],
+ "fields": [
+  {
+   "columns": 1,
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "options": "Item",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 2,
+   "fetch_from": "item_code.item_name",
+   "fieldname": "item_name",
+   "fieldtype": "Read Only",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "fetch_from": "item_code.item_group",
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "label": "Item Group",
+   "options": "Item Group",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "scheduled_qty",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Scheduled Qty",
+   "read_only": 1
+  },
+  {
+   "columns": 2,
+   "fieldname": "qty_produced",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty Produced"
+  },
+  {
+   "columns": 1,
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "\nSet\nNot Set",
+   "read_only": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "FG\nScrap",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty_already_produced",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Qty Already Produced",
+   "read_only": 1
+  },
+  {
+   "bold": 1,
+   "columns": 1,
+   "fieldname": "show_details",
+   "fieldtype": "Button",
+   "in_list_view": 1,
+   "label": "Show Details"
+  },
+  {
+   "columns": 1,
+   "fieldname": "s_warehouse",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Warehouse",
+   "options": "Warehouse",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "datas_section",
+   "fieldtype": "Section Break",
+   "label": "Datas"
+  },
+  {
+   "fieldname": "data",
+   "fieldtype": "Code",
+   "label": "Data",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2021-03-02 11:05:31.194447",
+ "modified_by": "Administrator",
+ "module": "Next Manufacturing",
+ "name": "Material Produce Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
