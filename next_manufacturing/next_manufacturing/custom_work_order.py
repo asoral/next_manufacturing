@@ -292,7 +292,7 @@ def make_material_produce(doc_name):
         "item_code": wo_doc.production_item,
         "item_name": wo_doc.item_name,
         "item_group": item_doc.item_group,
-        "s_warehouse": wo_doc.wip_warehouse,
+        "s_warehouse": wo_doc.fg_warehouse,
         "uom": item_doc.stock_uom,
         "status": "Not Set",
         "type": "FG",
