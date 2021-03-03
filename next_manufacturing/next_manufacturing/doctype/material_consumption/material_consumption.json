@@ -136,7 +136,7 @@
   },
   {
    "bold": 1,
-   "depends_on": "eval:doc.type == 'Manual'",
+   "depends_on": "eval:doc.type == 'Manual' && doc.docstatus == 0",
    "fieldname": "assign_material",
    "fieldtype": "Button",
    "label": "Assign Material"
@@ -149,7 +149,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-02-27 12:41:35.895609",
+ "modified": "2021-03-02 17:14:50.512950",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Consumption",

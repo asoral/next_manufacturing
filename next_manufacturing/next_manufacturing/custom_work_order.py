@@ -171,35 +171,36 @@ def add_additional_fabric(doc_name, item_code, required_qty):
         wo.set_available_qty()
         wo.save(ignore_permissions=True)
 
-    stock_entry = frappe.new_doc("Stock Entry")
-    stock_entry.work_order = wo.name
-    stock_entry.stock_entry_type = "Material Transfer for Manufacture"
-    expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
-    item_name, stock_uom, description = frappe.db.get_values("Item", item_code, ["item_name", "stock_uom", "description"])[0]
-
-    item_expense_account, item_cost_center = frappe.db.get_value("Item Default", {'parent': item_code, 'company': wo.company}, ["expense_account", "buying_cost_center"])
-
-    if not cost_center and not item_cost_center:
-        frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
-
-    se_item = stock_entry.append("items")
-    se_item.item_code = item_code
-    se_item.qty = required_qty
-    se_item.s_warehouse = wo.source_warehouse
-    se_item.t_warehouse = wo.wip_warehouse
-    se_item.item_name = item_name
-    se_item.description = description
-    se_item.uom = stock_uom
-    se_item.stock_uom = stock_uom
-    se_item.expense_account = item_expense_account or expense_account
-    se_item.cost_center = item_cost_center or cost_center
-
-    # in stock uom
-    se_item.conversion_factor = 1.00
-    stock_entry.set_actual_qty()
-    stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
-
-    return stock_entry.as_dict()
+    # stock_entry = frappe.new_doc("Stock Entry")
+    # stock_entry.work_order = wo.name
+    # stock_entry.stock_entry_type = "Material Transfer for Manufacture"
+    # expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
+    # item_name, stock_uom, description = frappe.db.get_values("Item", item_code, ["item_name", "stock_uom", "description"])[0]
+    #
+    # item_expense_account, item_cost_center = frappe.db.get_value("Item Default", {'parent': item_code, 'company': wo.company}, ["expense_account", "buying_cost_center"])
+    #
+    # if not cost_center and not item_cost_center:
+    #     frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
+    #
+    # se_item = stock_entry.append("items")
+    # se_item.item_code = item_code
+    # se_item.qty = required_qty
+    # se_item.s_warehouse = wo.source_warehouse
+    # se_item.t_warehouse = wo.wip_warehouse
+    # se_item.item_name = item_name
+    # se_item.description = description
+    # se_item.uom = stock_uom
+    # se_item.stock_uom = stock_uom
+    # se_item.expense_account = item_expense_account or expense_account
+    # se_item.cost_center = item_cost_center or cost_center
+    #
+    # # in stock uom
+    # se_item.conversion_factor = 1.00
+    # stock_entry.set_actual_qty()
+    # stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
+    #
+    # return stock_entry.as_dict()
+    return True
 
 
 @frappe.whitelist()
@@ -219,7 +220,6 @@ def get_filtered_item(doctype, txt, searchfield, start, page_len, filters):
 @frappe.whitelist()
 def make_consume_material(doc_name):
     wo_doc = frappe.get_doc('Work Order',doc_name)
-
     mc = frappe.new_doc("Material Consumption")
     mc.work_order = wo_doc.name
     mc.t_warehouse = wo_doc.wip_warehouse
@@ -281,10 +281,14 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
     return doc
 
 @frappe.whitelist()
-def make_material_produce(doc_name):
+def make_material_produce(doc_name,partial=0):
     wo_doc = frappe.get_doc('Work Order', doc_name)
+    bom = frappe.get_doc('BOM', wo_doc.bom_no)
     mc = frappe.new_doc("Material Produce")
     mc.work_order = wo_doc.name
+    mc.bom = bom.name
+    mc.batch_size = bom.batch_size
+    mc.partial_produce = partial
     mc.t_warehouse = wo_doc.fg_warehouse
     mc.company = wo_doc.company
     item_doc = frappe.get_doc("Item", wo_doc.production_item)
@@ -297,7 +301,7 @@ def make_material_produce(doc_name):
         "status": "Not Set",
         "type": "FG",
         "scheduled_qty": wo_doc.qty,
-        "qty_produced": wo_doc.qty,
+        "qty_produced": wo_doc.qty - wo_doc.produced_qty,
         "qty_already_produced": wo_doc.produced_qty
     })
 

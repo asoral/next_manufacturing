@@ -51,28 +51,31 @@ class CustomStockEntry(StockEntry):
     def make_batches(self, warehouse_field):
         '''Create batches if required. Called before submit'''
         enabled = frappe.db.get_single_value('Batch Settings', 'enabled')
-        is_finish_batch_series = frappe.db.get_single_value('Batch Settings', 'is_finish_batch_series')
-        batch_series = frappe.db.get_single_value('Batch Settings', 'batch_series')
-        for d in self.items:
-            if d.get(warehouse_field) and not d.batch_no:
-                has_batch_no, create_new_batch = frappe.db.get_value('Item', d.item_code,
-                                                                     ['has_batch_no', 'create_new_batch'])
-                if has_batch_no and create_new_batch:
-                    batch_name = None
-                    if self.work_order:
-                        if enabled:
-                            if is_finish_batch_series == 'Use Work Order as Series':
-                                batch_name = make_autoname(str(self.work_order) + "-.##")
-                            if is_finish_batch_series == 'Create New':
-                                batch_name = make_autoname(batch_series)
-
-                    d.batch_no = frappe.get_doc(dict(
-                        doctype='Batch',
-                        batch_id=batch_name,
-                        item=d.item_code,
-                        supplier=getattr(self, 'supplier', None),
-                        reference_doctype=self.doctype,
-                        reference_name=self.name)).insert().name
+        if enabled:
+            is_finish_batch_series = frappe.db.get_single_value('Batch Settings', 'is_finish_batch_series')
+            batch_series = frappe.db.get_single_value('Batch Settings', 'batch_series')
+            for d in self.items:
+                if d.get(warehouse_field) and not d.batch_no:
+                    has_batch_no, create_new_batch = frappe.db.get_value('Item', d.item_code,
+                                                                         ['has_batch_no', 'create_new_batch'])
+                    if has_batch_no and create_new_batch:
+                        batch_name = None
+                        if self.work_order:
+                            if enabled:
+                                if is_finish_batch_series == 'Use Work Order as Series':
+                                    batch_name = make_autoname(str(self.work_order) + "-.##")
+                                if is_finish_batch_series == 'Create New':
+                                    batch_name = make_autoname(batch_series)
+    
+                        d.batch_no = frappe.get_doc(dict(
+                            doctype='Batch',
+                            batch_id=batch_name,
+                            item=d.item_code,
+                            supplier=getattr(self, 'supplier', None),
+                            reference_doctype=self.doctype,
+                            reference_name=self.name)).insert().name
+        else:
+            super(CustomStockEntry, self).make_batches()
 
     def get_items(self):
         super(CustomStockEntry, self).get_items()

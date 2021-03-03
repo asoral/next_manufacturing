@@ -2,7 +2,18 @@
 // For license information, please see license.txt
 
 frappe.ui.form.on('Material Produce', {
-	 add_details: function(frm) {
+    setup: function(frm){
+        apply_filter(frm)
+    },
+    refresh: function(frm){
+        if(frm.doc.docstatus == 1)
+        {
+            frm.add_custom_button(__('Produce'),function() {
+                make_stock_entry(frm)
+            }).addClass('btn-primary');
+        }
+    },
+	add_details: function(frm) {
 	    frappe.call({
             doc: frm.doc,
             method: "set_produce_material",
@@ -11,7 +22,7 @@ frappe.ui.form.on('Material Produce', {
                 frm.reload_doc();
             }
         });
-	 }
+	}
 });
 
 frappe.ui.form.on('Material Produce Item', {
@@ -20,6 +31,39 @@ frappe.ui.form.on('Material Produce Item', {
         add_details_line(frm,row)
     },
 });
+
+function apply_filter(frm){
+    frm.fields_dict['material_produce_details'].grid.get_field("item_code").get_query = function(doc, cdt, cdn) {
+        let name = null
+        for (var i =0; i < frm.doc.material_produce_details.length; i++)
+	    {
+	        if (frm.doc.material_produce_details[i].item_code){
+	            name = frm.doc.material_produce_details[i].item_code
+	            break;
+	        }
+	    }
+        var child = locals[cdt][cdn];
+        return {
+            filters:[
+               ['name', '=', name]
+            ]
+        }
+    }
+}
+
+
+function make_stock_entry(frm){
+    frappe.call({
+        doc: frm.doc,
+        method: "make_stock_entry",
+        callback: function(r) {
+            if (r.message) {
+                var doc = frappe.model.sync(r.message)[0];
+                frappe.set_route("Form", doc.doctype, doc.name);
+            }
+        }
+    });
+}
 
 function add_details_line(frm,line_obj){
     frappe.call({
@@ -30,6 +74,7 @@ function add_details_line(frm,line_obj){
             item_code: line_obj.item_code,
             warehouse: line_obj.s_warehouse,
             qty_produced: line_obj.qty_produced,
+            batch_size: frm.doc.batch_size,
             data:line_obj.data
         },
         callback: function (r) {

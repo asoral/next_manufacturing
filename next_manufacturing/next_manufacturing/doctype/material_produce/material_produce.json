@@ -8,6 +8,9 @@
  "field_order": [
   "naming_series",
   "work_order",
+  "bom",
+  "batch_size",
+  "partial_produce",
   "column_break_5",
   "t_warehouse",
   "company",
@@ -23,7 +26,6 @@
   {
    "fieldname": "naming_series",
    "fieldtype": "Select",
-   "in_list_view": 1,
    "label": "Sereis",
    "options": "MP-.YYYY.-.####",
    "reqd": 1
@@ -40,6 +42,7 @@
   {
    "fieldname": "work_order",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Work Order",
    "options": "Work Order",
    "read_only": 1,
@@ -48,6 +51,7 @@
   {
    "fieldname": "t_warehouse",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Target Warehosue",
    "options": "Warehouse",
    "read_only": 1,
@@ -60,6 +64,7 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Company",
    "options": "Company",
    "reqd": 1
@@ -95,15 +100,37 @@
   },
   {
    "bold": 1,
+   "depends_on": "eval:doc.docstatus == 0",
    "fieldname": "add_details",
    "fieldtype": "Button",
-   "label": "Add Details"
+   "label": "Assigned"
+  },
+  {
+   "default": "0",
+   "fieldname": "partial_produce",
+   "fieldtype": "Check",
+   "label": "Partial Produce",
+   "read_only": 1
+  },
+  {
+   "fieldname": "bom",
+   "fieldtype": "Link",
+   "label": "BOM",
+   "options": "BOM",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "bom.batch_size",
+   "fieldname": "batch_size",
+   "fieldtype": "Float",
+   "label": "Batch Size",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-03-02 11:39:44.819260",
+ "modified": "2021-03-03 16:03:17.563223",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Produce",

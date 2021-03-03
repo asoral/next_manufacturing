@@ -30,9 +30,11 @@
    "reqd": 1
   },
   {
+   "columns": 2,
    "fetch_from": "item_code.item_name",
    "fieldname": "item_name",
    "fieldtype": "Read Only",
+   "in_list_view": 1,
    "label": "Item Name"
   },
   {
@@ -46,7 +48,7 @@
    "reqd": 1
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "qty_to_issue",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -80,19 +82,20 @@
    "read_only": 1
   },
   {
+   "allow_on_submit": 1,
    "bold": 1,
    "columns": 2,
    "fieldname": "show_details",
    "fieldtype": "Button",
    "in_list_view": 1,
-   "label": "Show Details"
+   "label": "Add Details"
   },
   {
    "fieldname": "section_break_5",
    "fieldtype": "Column Break"
   },
   {
-   "columns": 2,
+   "columns": 1,
    "fieldname": "qty_issued",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -114,7 +117,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-02-26 18:31:59.470690",
+ "modified": "2021-03-03 13:30:11.322162",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Materials to Consume Items",
