@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 import json
 
 class MaterialProduce(Document):
@@ -47,12 +48,24 @@ class MaterialProduce(Document):
         return self.make_se()
 
     def make_se(self):
+        wo = frappe.get_doc("Work Order",self.work_order)
         stock_entry = frappe.new_doc("Stock Entry")
         stock_entry.work_order = self.work_order
+        stock_entry.bom_no = wo.bom_no
+        stock_entry.from_bom = 1
+        stock_entry.use_multi_level_bom = wo.use_multi_level_bom
         stock_entry.material_produce = self.name
         stock_entry.company = self.company
         stock_entry.stock_entry_type = "Manufacture"
         total_transfer_qty = 0
+        lst = []
+        for res in self.material_produce_item:
+            if res.status == 'Not Set':
+                lst.append(0)
+            else:
+                lst.append(1)
+        if 1 not in lst:
+            frappe.throw(_("At least one Item required to be Produce"))
 
         wo = frappe.get_doc("Work Order",self.work_order)
         for res in wo.required_items:
@@ -80,6 +93,16 @@ class MaterialProduce(Document):
         for res in self.material_produce_item:
             if res.data:
                 for line in json.loads(res.data):
+                    batch_no = None
+                    if line.get('has_batch_no'):
+                        batch_name = make_autoname(line.get('batch'))
+                        batch_no = frappe.get_doc(dict(
+                            doctype='Batch',
+                            batch_id=batch_name,
+                            item=line.get('item_code'),
+                            supplier=getattr(self, 'supplier', None),
+                            reference_doctype=self.doctype,
+                            reference_name=self.name)).insert().name
                     expense_account, cost_center = frappe.db.get_values("Company", self.company, ["default_expense_account", "cost_center"])[0]
                     item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
                                             {'parent': line.get('item_code'),'company': self.company},["expense_account","buying_cost_center"])
@@ -95,15 +118,15 @@ class MaterialProduce(Document):
                     se_item.description = itm_doc.description
                     se_item.uom = res.uom
                     se_item.stock_uom = res.uom
-                    se_item.batch_no = line.get('batch')
+                    se_item.batch_no = batch_no
                     se_item.expense_account = item_expense_account or expense_account
                     se_item.cost_center = item_cost_center or cost_center
                     se_item.is_finished_item = 1 if res.type == 'FG' else 0
                     se_item.is_scrap_item = 1 if res.type == 'Scrap' else 0
                     # in stock uom
-                    if res.type == "FG":
-                        total_transfer_qty += line.get('qty_produced')
                     se_item.conversion_factor = 1.00
+            if res.type == "FG":
+                total_transfer_qty += res.qty_produced
         stock_entry.from_bom = 1
         stock_entry.fg_completed_qty = total_transfer_qty
         stock_entry.set_actual_qty()
@@ -114,7 +137,7 @@ class MaterialProduce(Document):
 
 
 @frappe.whitelist()
-def add_details_line(line_id,item_code, warehouse,qty_produced=None,batch_size=None, data=None):
+def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None,batch_size=None, data=None):
     if qty_produced:
         qty_produced = float(qty_produced)
     else:
@@ -126,6 +149,21 @@ def add_details_line(line_id,item_code, warehouse,qty_produced=None,batch_size=N
     if not data:
         item = frappe.get_doc("Item", item_code)
         lst = []
+        batch_option = None
+        enabled = frappe.db.get_single_value('Batch Settings', 'enabled')
+        if enabled:
+            is_finish_batch_series = frappe.db.get_single_value('Batch Settings', 'is_finish_batch_series')
+            batch_series = frappe.db.get_single_value('Batch Settings', 'batch_series')
+            if is_finish_batch_series == 'Use Work Order as Series':
+                batch_option = str(work_order) + "-.##"
+            if is_finish_batch_series == 'Create New':
+                batch_option = batch_series
+        else:
+            if item.batch_number_series:
+                batch_option = item.batch_number_series
+            else:
+                batch_option = str(work_order) + "-.##"
+
         if item.has_batch_no and batch_size:
             remaining_size = qty_produced
             while True:
@@ -136,6 +174,7 @@ def add_details_line(line_id,item_code, warehouse,qty_produced=None,batch_size=N
                         "t_warehouse": warehouse,
                         "qty_produced": batch_size,
                         "has_batch_no": item.has_batch_no,
+                        "batch": batch_option if item.has_batch_no else None,
                         "weight": item.weight_per_unit,
                         "line_ref": line_id
                     })
@@ -146,6 +185,7 @@ def add_details_line(line_id,item_code, warehouse,qty_produced=None,batch_size=N
                         "t_warehouse": warehouse,
                         "qty_produced": remaining_size,
                         "has_batch_no": item.has_batch_no,
+                        "batch": batch_option if item.has_batch_no else None,
                         "weight": item.weight_per_unit,
                         "line_ref": line_id
                     })

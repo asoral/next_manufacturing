@@ -20,7 +20,9 @@
   "material_produce_details",
   "add_details",
   "section_break_7",
-  "amended_from"
+  "amended_from",
+  "column_break_16",
+  "produced"
  ],
  "fields": [
   {
@@ -125,12 +127,24 @@
    "fieldtype": "Float",
    "label": "Batch Size",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "produced",
+   "fieldtype": "Check",
+   "hidden": 1,
+   "label": "Produced",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-03-03 16:03:17.563223",
+ "modified": "2021-03-03 18:37:05.449502",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Produce",

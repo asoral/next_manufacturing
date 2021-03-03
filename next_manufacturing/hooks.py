@@ -102,6 +102,10 @@ doc_events = {
 		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
 		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status"
 	},
+	"Stock Entry":{
+		"on_submit": "next_manufacturing.next_manufacturing.custom_stock_entry.produce_qty",
+		"on_cancel": "next_manufacturing.next_manufacturing.custom_stock_entry.cancel_produce_qty",
+	}
 }
 
 # Scheduled Tasks

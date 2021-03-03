@@ -6,7 +6,7 @@ frappe.ui.form.on('Material Produce', {
         apply_filter(frm)
     },
     refresh: function(frm){
-        if(frm.doc.docstatus == 1)
+        if(frm.doc.docstatus == 1 && frm.doc.produced == 0)
         {
             frm.add_custom_button(__('Produce'),function() {
                 make_stock_entry(frm)
@@ -75,6 +75,7 @@ function add_details_line(frm,line_obj){
             warehouse: line_obj.s_warehouse,
             qty_produced: line_obj.qty_produced,
             batch_size: frm.doc.batch_size,
+            work_order: frm.doc.work_order,
             data:line_obj.data
         },
         callback: function (r) {

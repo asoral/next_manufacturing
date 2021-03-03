@@ -62,11 +62,10 @@
   {
    "columns": 1,
    "fieldname": "batch",
-   "fieldtype": "Link",
+   "fieldtype": "Data",
    "in_list_view": 1,
-   "label": "Batch",
-   "mandatory_depends_on": "eval:doc.has_batch_no ==1",
-   "options": "Batch"
+   "label": "Batch Series",
+   "mandatory_depends_on": "eval:doc.has_batch_no ==1"
   },
   {
    "columns": 1,
@@ -95,7 +94,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-03-02 11:52:52.398691",
+ "modified": "2021-03-03 18:13:39.790927",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Produce Detail",

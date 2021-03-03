@@ -136,3 +136,16 @@ class CustomStockEntry(StockEntry):
             if not pro_doc.operations:
                 pro_doc.set_actual_dates()
 
+def produce_qty(doc, method):
+    if doc.material_produce:
+        pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
+        pro_doc.produced = 1
+        pro_doc.flags.ignore_validate_update_after_submit = True
+        pro_doc.db_update()
+
+def cancel_produce_qty(doc, method):
+    if doc.material_produce:
+        pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
+        pro_doc.produced = 0
+        pro_doc.flags.ignore_validate_update_after_submit = True
+        pro_doc.db_update()
