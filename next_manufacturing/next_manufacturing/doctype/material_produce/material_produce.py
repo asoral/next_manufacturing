@@ -68,6 +68,13 @@ class MaterialProduce(Document):
             frappe.throw(_("At least one Item required to be Produce"))
 
         wo = frappe.get_doc("Work Order",self.work_order)
+        # for res in self.material_produce_item:
+        #     if res.type == "FG":
+        #         total_transfer_qty += res.qty_produced
+        # item_dict = stock_entry.get_bom_raw_materials(total_transfer_qty)
+        # print("-------------item_dict", item_dict)
+        # for k in item_dict.keys():
+        #     stock_entry.append("items", item_dict[k])
         for res in wo.required_items:
             if res.transferred_qty:
                 expense_account, cost_center = frappe.db.get_values("Company", self.company, ["default_expense_account", "cost_center"])[0]
@@ -80,7 +87,7 @@ class MaterialProduce(Document):
                 se_item = stock_entry.append("items")
                 se_item.item_code = res.item_code
                 se_item.qty = res.transferred_qty
-                se_item.s_warehouse = res.source_warehouse
+                se_item.s_warehouse = wo.wip_warehouse
                 se_item.item_name = itm_doc.item_name
                 se_item.description = itm_doc.description
                 se_item.uom = itm_doc.stock_uom
