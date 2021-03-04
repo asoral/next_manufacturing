@@ -103,7 +103,8 @@ doc_events = {
 		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status"
 	},
 	"Stock Entry":{
-		"on_submit": "next_manufacturing.next_manufacturing.custom_stock_entry.produce_qty",
+		"on_submit": ["next_manufacturing.next_manufacturing.custom_stock_entry.produce_qty",
+					"next_manufacturing.next_manufacturing.custom_stock_entry.change_work_order_status"],
 		"on_cancel": "next_manufacturing.next_manufacturing.custom_stock_entry.cancel_produce_qty",
 	}
 }

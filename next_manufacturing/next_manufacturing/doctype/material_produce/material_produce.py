@@ -68,25 +68,56 @@ class MaterialProduce(Document):
             frappe.throw(_("At least one Item required to be Produce"))
 
         wo = frappe.get_doc("Work Order",self.work_order)
-        # for res in self.material_produce_item:
-        #     if res.type == "FG":
-        #         total_transfer_qty += res.qty_produced
-        # item_dict = stock_entry.get_bom_raw_materials(total_transfer_qty)
-        # print("-------------item_dict", item_dict)
-        # for k in item_dict.keys():
-        #     stock_entry.append("items", item_dict[k])
+        for res in self.material_produce_item:
+            if res.type == "FG":
+                total_transfer_qty += res.qty_produced
         for res in wo.required_items:
+            qty = 0
             if res.transferred_qty:
                 expense_account, cost_center = frappe.db.get_values("Company", self.company, ["default_expense_account", "cost_center"])[0]
                 item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
-                                    {'parent': res.item_code,'company': self.company},["expense_account","buying_cost_center"])
+                                {'parent': res.item_code,'company': self.company},["expense_account","buying_cost_center"])
                 if not cost_center and not item_cost_center:
                     frappe.throw(_("Please update default Cost Center for company {0}").format(self.company))
-
+                if self.partial_produce:
+                    if res.additional_material:
+                        qty = res.transferred_qty
+                    else:
+                        bom = frappe.get_doc("BOM",wo.bom_no)
+                        if bom.exploded_items:
+                            query = frappe.db.sql("""select (bl.stock_qty / ifnull(b.quantity, 1)) as 'qty' 
+                                from `tabBOM` as b 
+                                inner join `tabBOM Explosion Item` as bl on bl.parent = b.name
+                                where bl.item_code = %s and b.name = %s limit 1""",(res.item_code,bom.name))
+                            if query:
+                                qty = float(query[0][0]) * total_transfer_qty
+                            else:
+                                qty = res.transferred_qty
+                        elif bom.scrap_items:
+                            query = frappe.db.sql("""select (bl.stock_qty / ifnull(b.quantity, 1)) as 'qty' 
+                                from `tabBOM` as b 
+                                inner join `tabBOM Scrap Item` as bl on bl.parent = b.name
+                                where bl.item_code = %s and b.name = %s limit 1""",(res.item_code,bom.name))
+                            if query:
+                                qty = float(query[0][0]) * total_transfer_qty
+                            else:
+                                qty = res.transferred_qty
+                        else:
+                            query = frappe.db.sql("""select (bl.qty / ifnull(b.quantity, 1)) as 'qty' 
+                                from `tabBOM` as b 
+                                inner join `tabBOM Item` as bl on bl.parent = b.name
+                                where bl.item_code = %s and b.name = %s limit 1""",(res.item_code,bom.name))
+                            if query:
+                                qty = float(query[0][0]) * total_transfer_qty
+                            else:
+                                qty = res.transferred_qty
+                else:
+                    qty = res.transferred_qty - res.consumed_qty
+                    stock_entry.completed_work_order = 1
                 itm_doc = frappe.get_doc("Item",res.item_code)
                 se_item = stock_entry.append("items")
                 se_item.item_code = res.item_code
-                se_item.qty = res.transferred_qty
+                se_item.qty = qty
                 se_item.s_warehouse = wo.wip_warehouse
                 se_item.item_name = itm_doc.item_name
                 se_item.description = itm_doc.description
@@ -132,8 +163,8 @@ class MaterialProduce(Document):
                     se_item.is_scrap_item = 1 if res.type == 'Scrap' else 0
                     # in stock uom
                     se_item.conversion_factor = 1.00
-            if res.type == "FG":
-                total_transfer_qty += res.qty_produced
+            # if res.type == "FG":
+            #     total_transfer_qty += res.qty_produced
         stock_entry.from_bom = 1
         stock_entry.fg_completed_qty = total_transfer_qty
         stock_entry.set_actual_qty()

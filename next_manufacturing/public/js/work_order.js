@@ -14,10 +14,12 @@ frappe.ui.form.on("Work Order",{
 
             frm.trigger('show_progress_for_items');
 			frm.trigger('show_progress_for_operations');
+            if(frm.doc.status != "Completed"){
+                frm.add_custom_button(__('Create Pick List'), function() {
+                    erpnext.work_order.create_pick_list(frm);
+                });
+            }
 
-			frm.add_custom_button(__('Create Pick List'), function() {
-                erpnext.work_order.create_pick_list(frm);
-            });
 
             if(frm.doc.operations && frm.doc.operations.length
 			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
@@ -36,7 +38,7 @@ frappe.ui.form.on("Work Order",{
 			}
 
 
-            if(frm.doc.transfer_material_against != 'Job Card')
+            if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.status != "Completed")
             {
                 frm.add_custom_button(__('Consume Material'),function() {
                 frappe.call({

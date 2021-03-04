@@ -149,3 +149,9 @@ def cancel_produce_qty(doc, method):
         pro_doc.produced = 0
         pro_doc.flags.ignore_validate_update_after_submit = True
         pro_doc.db_update()
+
+def change_work_order_status(doc, method):
+    if doc.completed_work_order:
+        wo = frappe.get_doc("Work Order",doc.work_order)
+        wo.status = "Completed"
+        wo.db_update()
