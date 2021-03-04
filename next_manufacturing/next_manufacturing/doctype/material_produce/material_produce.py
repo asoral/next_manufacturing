@@ -44,6 +44,9 @@ class MaterialProduce(Document):
                 l_doc.save(ignore_permissions=True)
         return True
 
+    def on_submit(self):
+        self.make_se()
+
     def make_stock_entry(self):
         return self.make_se()
 
@@ -169,8 +172,10 @@ class MaterialProduce(Document):
         stock_entry.fg_completed_qty = total_transfer_qty
         stock_entry.set_actual_qty()
         stock_entry.set_missing_values()
-        # stock_entry.insert(ignore_permissions=True)
-        # stock_entry.validate()
+        stock_entry.insert(ignore_permissions=True)
+        stock_entry.validate()
+        stock_entry.flags.ignore_validate_update_after_submit = True
+        stock_entry.submit()
         return stock_entry.as_dict()
 
 

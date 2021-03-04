@@ -5,14 +5,14 @@ frappe.ui.form.on('Material Produce', {
     setup: function(frm){
         apply_filter(frm)
     },
-    refresh: function(frm){
-        if(frm.doc.docstatus == 1 && frm.doc.produced == 0)
-        {
-            frm.add_custom_button(__('Produce'),function() {
-                make_stock_entry(frm)
-            }).addClass('btn-primary');
-        }
-    },
+//    refresh: function(frm){
+//        if(frm.doc.docstatus == 1 && frm.doc.produced == 0)
+//        {
+//            frm.add_custom_button(__('Produce'),function() {
+//                make_stock_entry(frm)
+//            }).addClass('btn-primary');
+//        }
+//    },
 	add_details: function(frm) {
 	    frappe.call({
             doc: frm.doc,
