@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 import frappe
+from frappe import _
 
 
 @frappe.whitelist()
@@ -25,3 +26,38 @@ def make_material_consumption(doc_name):
             })
         mc.insert(ignore_permissions=True)
         return mc.as_dict()
+
+@frappe.whitelist()
+def add_additional_fabric_in_job_card(doc_name, item_code, required_qty, warehouse= None):
+    job = frappe.get_doc("Job Card", doc_name)
+    wo_line = frappe.get_list("Job Card Item", filters={"item_code": item_code, "parent": job.name})
+    if wo_line:
+        jci_doc = frappe.get_doc("Job Card Item", wo_line[0].name)
+        if jci_doc.required_qty:
+            jci_doc.required_qty += float(required_qty)
+        else:
+            jci_doc.required_qty = required_qty
+        jci_doc.flags.ignore_validate_update_after_submit = True
+        jci_doc.save(ignore_permissions=True)
+        job.flags.ignore_validate_update_after_submit = True
+        job.validate()
+    else:
+        if not warehouse:
+            frappe.throw(_("Please select Warehouse!"))
+
+        item = frappe.get_doc("Item", item_code)
+        job.append("items", {
+            "item_code": item_code,
+            "item_name": item.item_name,
+            "description": item.description,
+            "source_warehouse": warehouse,
+            "uom": item.stock_uom,
+            "required_qty": required_qty
+        })
+        job.flags.ignore_validate_update_after_submit = True
+        job.save(ignore_permissions=True)
+
+    if job.work_order:
+        from next_manufacturing.next_manufacturing.custom_work_order import add_additional_fabric
+        add_additional_fabric(job.work_order, item_code, required_qty, warehouse)
+    return True

@@ -141,7 +141,7 @@ def change_status(doc,mehtod):
     doc.db_update()
 
 @frappe.whitelist()
-def add_additional_fabric(doc_name, item_code, required_qty):
+def add_additional_fabric(doc_name, item_code, required_qty, warehouse=None):
     frappe.clear_cache()
     wo = frappe.get_doc("Work Order", doc_name)
     wo_line = frappe.get_list("Work Order Item", filters={"item_code": item_code, "parent": wo.name})
@@ -160,9 +160,11 @@ def add_additional_fabric(doc_name, item_code, required_qty):
         wo.flags.ignore_validate_update_after_submit = True
         wo.validate()
     else:
+        if not warehouse:
+            warehouse = wo.source_warehouse
         wo.append("required_items", {
             "item_code":item_code,
-            "source_warehouse": wo.source_warehouse,
+            "source_warehouse": warehouse,
             "required_qty":required_qty,
             "additional_material": 1,
             "include_item_in_manufacturing": 1

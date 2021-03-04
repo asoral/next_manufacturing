@@ -55,7 +55,7 @@ frappe.ui.form.on("Work Order",{
                     });
                 }).addClass('btn-primary');
             }
-            if(frm.doc.status == 'In Process')
+            if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.status == 'In Process')
             {
                 frm.add_custom_button(__('Add Additional Material'), function() {
                     frappe.prompt(
