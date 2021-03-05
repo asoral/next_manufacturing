@@ -207,35 +207,47 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
             else:
                 batch_option = str(work_order) + "-.##"
 
-        if item.has_batch_no and batch_size:
+        if item.has_batch_no:
             remaining_size = qty_produced
-            while True:
-                if (remaining_size >= batch_size):
-                    lst.append({
-                        "item_code": item.name,
-                        "item_name": item.item_name,
-                        "t_warehouse": warehouse,
-                        "qty_produced": batch_size,
-                        "has_batch_no": item.has_batch_no,
-                        "batch": batch_option if item.has_batch_no else None,
-                        "weight": item.weight_per_unit,
-                        "line_ref": line_id
-                    })
-                else:
-                    lst.append({
-                        "item_code": item.name,
-                        "item_name": item.item_name,
-                        "t_warehouse": warehouse,
-                        "qty_produced": remaining_size,
-                        "has_batch_no": item.has_batch_no,
-                        "batch": batch_option if item.has_batch_no else None,
-                        "weight": item.weight_per_unit,
-                        "line_ref": line_id
-                    })
-                    break
-                remaining_size -= batch_size
-                if(remaining_size < 1):
-                    break
+            if batch_size:
+                while True:
+                    if (remaining_size >= batch_size):
+                        lst.append({
+                            "item_code": item.name,
+                            "item_name": item.item_name,
+                            "t_warehouse": warehouse,
+                            "qty_produced": batch_size,
+                            "has_batch_no": item.has_batch_no,
+                            "batch": batch_option if item.has_batch_no else None,
+                            "weight": item.weight_per_unit,
+                            "line_ref": line_id
+                        })
+                    else:
+                        lst.append({
+                            "item_code": item.name,
+                            "item_name": item.item_name,
+                            "t_warehouse": warehouse,
+                            "qty_produced": remaining_size,
+                            "has_batch_no": item.has_batch_no,
+                            "batch": batch_option if item.has_batch_no else None,
+                            "weight": item.weight_per_unit,
+                            "line_ref": line_id
+                        })
+                        break
+                    remaining_size -= batch_size
+                    if(remaining_size < 1):
+                        break
+            else:
+                lst.append({
+                    "item_code": item.name,
+                    "item_name": item.item_name,
+                    "t_warehouse": warehouse,
+                    "qty_produced": qty_produced,
+                    "has_batch_no": item.has_batch_no,
+                    "batch": batch_option if item.has_batch_no else None,
+                    "weight": item.weight_per_unit,
+                    "line_ref": line_id
+                })
         else:
             lst.append({
                 "item_code": item.name,
