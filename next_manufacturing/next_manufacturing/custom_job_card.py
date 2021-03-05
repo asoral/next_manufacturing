@@ -6,16 +6,6 @@ from frappe.utils import get_link_to_form
 
 
 class CustomJobCard(JobCard):
-    def validate(self):
-        super(CustomJobCard, self).validate()
-        if self.status == "Work In Progress":
-            wo = frappe.get_doc("Work Order", self.work_order)
-            if wo.status == "Not Started":
-                wo.status = "In Process"
-                wo.db_update()
-
-
-
     def validate_job_card(self):
         if not self.time_logs:
             frappe.throw(_("Time logs are required for {0} {1}")
@@ -39,6 +29,10 @@ class CustomJobCard(JobCard):
         }[self.docstatus or 0]
         if self.time_logs:
                 self.status = 'Work In Progress'
+                wo = frappe.get_doc("Work Order", self.work_order)
+                if wo.status == "Not Started":
+                    wo.status = "In Process"
+                    wo.db_update()
 
         if (self.docstatus == 1 and
                 (self.for_quantity <= self.transferred_qty or not self.items)):
