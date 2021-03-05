@@ -138,15 +138,7 @@ frappe.ui.form.on("Job Card",{
 							frm.events.complete_job(frm, completed_time, frm.doc.for_quantity);
 				} else {
 					frm.events.complete_job(frm, completed_time, 0);
-				}
-				frm.submit('Submit');
-				frappe.call({
-					doc: frm.doc,
-					method: "on_submit",
-					callback: function(r) {
-						frm.refresh();
-					}
-				});
+				}				
 			}).addClass("btn-primary");
 		}
 	},
