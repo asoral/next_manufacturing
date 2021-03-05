@@ -38,7 +38,7 @@ doctype_js = {
 	"Work Order": "public/js/work_order.js",
 	"Job Card": "public/js/job_card.js",
 }
-# doctype_list_js = {"doctype" : "public/js/doctype_list.js"}
+# doctype_list_js = {"Job Card": "public/js/job_card_list.js",}
 # doctype_tree_js = {"doctype" : "public/js/doctype_tree.js"}
 # doctype_calendar_js = {"doctype" : "public/js/doctype_calendar.js"}
 
@@ -98,19 +98,22 @@ override_doctype_class = {
 # Hook on document methods and events
 
 doc_events = {
-	"Work Order":{
+	"Work Order": {
 		"after_insert": [
-				"next_manufacturing.next_manufacturing.custom_work_order.after_insert",
-				"next_manufacturing.next_manufacturing.custom_work_order.set_rm_cost"
-				],
+			"next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+			"next_manufacturing.next_manufacturing.custom_work_order.set_rm_cost"
+			],
 		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
 		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status",
 	},
-	"Stock Entry":{
+	"Stock Entry": {
 		"on_submit": ["next_manufacturing.next_manufacturing.custom_stock_entry.produce_qty",
-					"next_manufacturing.next_manufacturing.custom_stock_entry.change_work_order_status"
-					],
+			"next_manufacturing.next_manufacturing.custom_stock_entry.change_work_order_status"
+			],
 		"on_cancel": "next_manufacturing.next_manufacturing.custom_stock_entry.cancel_produce_qty",
+	},
+	"Job Card": {
+		"after_insert": "next_manufacturing.next_manufacturing.custom_job_card.status_job_card_status"
 	}
 }
 

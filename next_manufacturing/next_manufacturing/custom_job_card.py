@@ -6,6 +6,16 @@ from frappe.utils import get_link_to_form
 
 
 class CustomJobCard(JobCard):
+    def validate(self):
+        super(CustomJobCard, self).validate()
+        if self.status == "Work In Progress":
+            wo = frappe.get_doc("Work Order", self.work_order)
+            if wo.status == "Not Started":
+                wo.status = "In Process"
+                wo.db_update()
+
+
+
     def validate_job_card(self):
         if not self.time_logs:
             frappe.throw(_("Time logs are required for {0} {1}")
@@ -18,6 +28,28 @@ class CustomJobCard(JobCard):
         #     frappe.throw(_("The {0} ({1}) must be equal to {2} ({3})")
         #                  .format(total_completed_qty, bold(self.total_completed_qty), qty_to_manufacture,
         #                          bold(self.for_quantity)))
+
+    def set_status(self, update_status=False):
+        if self.status == "On Hold": return
+
+        self.status = {
+            0: "Open",
+            1: "Submitted",
+            2: "Cancelled"
+        }[self.docstatus or 0]
+        if self.time_logs:
+                self.status = 'Work In Progress'
+
+        if (self.docstatus == 1 and
+                (self.for_quantity <= self.transferred_qty or not self.items)):
+            self.status = 'Completed'
+
+        if self.status != 'Completed':
+            if self.for_quantity <= self.transferred_qty:
+                self.status = 'Material Transferred'
+
+        if update_status:
+            self.db_set('status', self.status)
 
 @frappe.whitelist()
 def make_material_consumption(doc_name):
@@ -77,3 +109,7 @@ def add_additional_fabric_in_job_card(doc_name, item_code, required_qty, warehou
         from next_manufacturing.next_manufacturing.custom_work_order import add_additional_fabric
         add_additional_fabric(job.work_order, item_code, required_qty, warehouse)
     return True
+
+def status_job_card_status(doc, method):
+    doc.status = "Open"
+    doc.db_update()
