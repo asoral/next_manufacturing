@@ -132,7 +132,7 @@ frappe.ui.form.on("Job Card",{
 				let completed_time = frappe.datetime.now_datetime();
 				frm.trigger("hide_timer");
 				if (frm.doc.for_quantity) {
-							frm.events.complete_job(frm, completed_time, frm.doc.transferred_qty);
+							frm.events.complete_job(frm, completed_time, frm.doc.for_quantity);
 				} else {
 					frm.events.complete_job(frm, completed_time, 0);
 				}
