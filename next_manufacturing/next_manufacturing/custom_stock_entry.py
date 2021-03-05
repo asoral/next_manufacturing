@@ -75,7 +75,7 @@ class CustomStockEntry(StockEntry):
                             reference_doctype=self.doctype,
                             reference_name=self.name)).insert().name
         else:
-            super(CustomStockEntry, self).make_batches()
+            super(CustomStockEntry, self).make_batches(warehouse_field)
 
     def get_items(self):
         super(CustomStockEntry, self).get_items()
