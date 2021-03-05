@@ -330,7 +330,7 @@ def set_operation_rm_cost(doc_name,transfer_material_against=None):
         if transfer_material_against == "Job Card":
             bom = frappe.get_doc("BOM", wo.bom_no)
             if wo.produced_qty:
-                wo.planned_rm_cost = (bom.row_material_cost / bom.quantity) * wo.produced_qty
+                wo.planned_rm_cost = (bom.raw_material_cost / bom.quantity) * wo.produced_qty
             else:
                 wo.planned_rm_cost = 0
             wo.db_update()
@@ -341,7 +341,7 @@ def set_rm_cost(doc,mehtod):
         if wo.transfer_material_against == "Job Card":
             bom = frappe.get_doc("BOM", wo.bom_no)
             if wo.produced_qty:
-                wo.planned_rm_cost = (bom.row_material_cost / bom.quantity) * wo.produced_qty
+                wo.planned_rm_cost = (bom.raw_material_cost / bom.quantity) * wo.produced_qty
             else:
                 wo.planned_rm_cost = 0
             wo.db_update()

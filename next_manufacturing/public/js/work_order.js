@@ -37,7 +37,6 @@ frappe.ui.form.on("Work Order",{
                 }
 			}
 
-
             if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.status != "Completed")
             {
                 frm.add_custom_button(__('Consume Material'),function() {
