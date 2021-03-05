@@ -113,7 +113,9 @@ doc_events = {
 		"on_cancel": "next_manufacturing.next_manufacturing.custom_stock_entry.cancel_produce_qty",
 	},
 	"Job Card": {
-		"after_insert": "next_manufacturing.next_manufacturing.custom_job_card.status_job_card_status"
+		"after_insert": "next_manufacturing.next_manufacturing.custom_job_card.status_job_card_status",
+		"before_insert": "next_manufacturing.next_manufacturing.custom_job_card.set_pre_planning_line",
+		"on_submit": "next_manufacturing.next_manufacturing.custom_job_card.transferred_qty_validate",
 	}
 }
 

@@ -2,8 +2,8 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _,bold
 from erpnext.manufacturing.doctype.job_card.job_card import JobCard
-from frappe.utils import get_link_to_form
-
+from frappe.utils import (flt, cint, time_diff_in_hours, get_datetime, get_link_to_form)
+class OverlapError(frappe.ValidationError): pass
 
 class CustomJobCard(JobCard):
     def validate_job_card(self):
@@ -44,6 +44,50 @@ class CustomJobCard(JobCard):
 
         if update_status:
             self.db_set('status', self.status)
+
+    def validate_time_logs(self):
+        self.total_completed_qty = 0.0
+        self.total_time_in_mins = 0.0
+
+        if self.get('time_logs'):
+            for d in self.get('time_logs'):
+                if not d.pre_planning:
+                    if get_datetime(d.from_time) > get_datetime(d.to_time):
+                        frappe.throw(_("Row {0}: From time must be less than to time").format(d.idx))
+
+                    data = self.get_overlap_for(d)
+                    if data:
+                        frappe.throw(_("Row {0}: From Time and To Time of {1} is overlapping with {2}")
+                                     .format(d.idx, self.name, data.name), OverlapError)
+
+                    if d.from_time and d.to_time:
+                        d.time_in_mins = time_diff_in_hours(d.to_time, d.from_time) * 60
+                        self.total_time_in_mins += d.time_in_mins
+
+                if d.completed_qty:
+                    self.total_completed_qty += d.completed_qty
+
+    def update_work_order_data(self, for_quantity, time_in_mins, wo):
+        time_data = frappe.db.sql("""
+            SELECT
+                min(from_time) as start_time, max(to_time) as end_time
+            FROM `tabJob Card` jc, `tabJob Card Time Log` jctl
+            WHERE
+                jctl.parent = jc.name and jc.work_order = %s
+                and jc.operation_id = %s and jc.docstatus = 1 and jctl.pre_planning = 0
+            """, (self.work_order, self.operation_id), as_dict=1)
+        for data in wo.operations:
+            if data.get("name") == self.operation_id:
+                data.completed_qty = for_quantity
+                data.actual_operation_time = time_in_mins
+                data.actual_start_time = time_data[0].start_time if time_data else None
+                data.actual_end_time = time_data[0].end_time if time_data else None
+
+        wo.flags.ignore_validate_update_after_submit = True
+        wo.update_operation_status()
+        wo.calculate_operating_cost()
+        wo.set_actual_dates()
+        wo.save()
 
 @frappe.whitelist()
 def make_material_consumption(doc_name):
@@ -107,3 +151,12 @@ def add_additional_fabric_in_job_card(doc_name, item_code, required_qty, warehou
 def status_job_card_status(doc, method):
     doc.status = "Open"
     doc.db_update()
+
+def set_pre_planning_line(doc, method):
+    if doc.time_logs:
+        for res in doc.time_logs:
+            res.pre_planning = 1
+
+def transferred_qty_validate(doc, method):
+    if not doc.transferred_qty:
+        frappe.throw(_("Consume Material Qty should be greater than Zero. Please Consume Material first!"))

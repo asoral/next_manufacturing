@@ -6,6 +6,9 @@ frappe.ui.form.on("Job Card",{
 //            });
 //        }
     refresh: function(frm){
+//        if(frm.doc.docstatus == 0){
+//            frm.page.clear_primary_action();
+//        }
         if (frm.custom_buttons) frm.clear_custom_buttons();
 
         if (frm.doc.docstatus == 0 && (frm.doc.for_quantity > frm.doc.total_completed_qty || !frm.doc.for_quantity)
@@ -29,8 +32,7 @@ frappe.ui.form.on("Job Card",{
                         }
                     });
                 }).addClass('btn-primary');
-            }
-            frm.add_custom_button(__('Add Additional Material'), function() {
+                frm.add_custom_button(__('Add Additional Material'), function() {
                 frappe.prompt(
                     [
                         {
@@ -93,6 +95,7 @@ frappe.ui.form.on("Job Card",{
                     __("Add Additional Material")
                 );
             });
+            }
         }
     },
     prepare_timer_buttons: function(frm) {
@@ -136,6 +139,14 @@ frappe.ui.form.on("Job Card",{
 				} else {
 					frm.events.complete_job(frm, completed_time, 0);
 				}
+				frm.submit('Submit');
+				frappe.call({
+					doc: frm.doc,
+					method: "on_submit",
+					callback: function(r) {
+						frm.refresh();
+					}
+				});
 			}).addClass("btn-primary");
 		}
 	},

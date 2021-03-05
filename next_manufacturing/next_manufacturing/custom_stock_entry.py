@@ -155,3 +155,4 @@ def change_work_order_status(doc, method):
         wo = frappe.get_doc("Work Order",doc.work_order)
         wo.status = "Completed"
         wo.db_update()
+
