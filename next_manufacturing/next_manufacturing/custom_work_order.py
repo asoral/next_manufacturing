@@ -322,3 +322,26 @@ def make_material_produce(doc_name,partial=0):
         })
     mc.insert(ignore_permissions=True)
     return mc.as_dict()
+
+@frappe.whitelist()
+def set_operation_rm_cost(doc_name,transfer_material_against=None):
+    wo = frappe.get_doc("Work Order",doc_name)
+    if transfer_material_against:
+        if transfer_material_against == "Job Card":
+            bom = frappe.get_doc("BOM", wo.bom_no)
+            if wo.produced_qty:
+                wo.planned_rm_cost = (bom.row_material_cost / bom.quantity) * wo.produced_qty
+            else:
+                wo.planned_rm_cost = 0
+            wo.db_update()
+
+def set_rm_cost(doc,mehtod):
+    wo = doc
+    if wo.transfer_material_against:
+        if wo.transfer_material_against == "Job Card":
+            bom = frappe.get_doc("BOM", wo.bom_no)
+            if wo.produced_qty:
+                wo.planned_rm_cost = (bom.row_material_cost / bom.quantity) * wo.produced_qty
+            else:
+                wo.planned_rm_cost = 0
+            wo.db_update()

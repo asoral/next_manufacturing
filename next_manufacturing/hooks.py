@@ -89,7 +89,8 @@ doctype_js = {
 
 override_doctype_class = {
 	"Stock Entry": "next_manufacturing.next_manufacturing.custom_stock_entry.CustomStockEntry",
-	"Work Order": "next_manufacturing.next_manufacturing.custom_work_order.CustomWorkOrder"
+	"Work Order": "next_manufacturing.next_manufacturing.custom_work_order.CustomWorkOrder",
+	"Job Card": "next_manufacturing.next_manufacturing.custom_job_card.CustomJobCard"
 }
 
 # Document Events
@@ -98,13 +99,17 @@ override_doctype_class = {
 
 doc_events = {
 	"Work Order":{
-		"after_insert": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+		"after_insert": [
+				"next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+				"next_manufacturing.next_manufacturing.custom_work_order.set_rm_cost"
+				],
 		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
-		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status"
+		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status",
 	},
 	"Stock Entry":{
 		"on_submit": ["next_manufacturing.next_manufacturing.custom_stock_entry.produce_qty",
-					"next_manufacturing.next_manufacturing.custom_stock_entry.change_work_order_status"],
+					"next_manufacturing.next_manufacturing.custom_stock_entry.change_work_order_status"
+					],
 		"on_cancel": "next_manufacturing.next_manufacturing.custom_stock_entry.cancel_produce_qty",
 	}
 }
