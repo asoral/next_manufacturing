@@ -212,7 +212,10 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
             amount = 0
         else:
             amount = float(amount)
-        per_item_rate = amount / qty_produced
+        if qty_produced > 1:
+            per_item_rate = amount / qty_produced
+        else:
+            per_item_rate = 0
 
         if item.has_batch_no:
             remaining_size = qty_produced
