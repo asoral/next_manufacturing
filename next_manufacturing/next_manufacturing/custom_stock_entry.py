@@ -156,3 +156,28 @@ def change_work_order_status(doc, method):
         wo.status = "Completed"
         wo.db_update()
 
+def set_material_cost(doc,method):
+    if doc.material_consumption:
+        m_doc = frappe.get_doc("Material Consumption", doc.material_consumption)
+        m_doc.cost_of_consumption = doc.total_outgoing_value
+        m_doc.db_update()
+        if doc.work_order:
+            wo = frappe.get_doc("Work Order", doc.work_order)
+            if wo.actual_rm_cost:
+                wo.actual_rm_cost += doc.total_outgoing_value
+            else:
+                wo.actual_rm_cost += doc.total_outgoing_value
+            wo.db_update()
+
+    if doc.material_produce:
+        qty_produced = 0
+        for res in doc.items:
+            if res.is_finished_item:
+                qty_produced += res.qty
+
+        wo = frappe.get_doc("Work Order", doc.work_order)
+        pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
+        if pro_doc.partial_produce:
+            pro_doc.cost_of_rm_consumed = (wo.planned_rm_cost / wo.qty) * qty_produced
+            pro_doc.cost_of_operation_consumed = (wo.planned_operating_cost / wo.qty) * qty_produced
+        pro_doc.db_update()

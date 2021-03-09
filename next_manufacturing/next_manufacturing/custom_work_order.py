@@ -152,7 +152,7 @@ def after_save(doc_name):
     doc.save()
 
 def change_status(doc,mehtod):
-    print("------------------")
+    print("--------change_status----------")
     doc.docstatus = 4
     doc.flags.ignore_validate_update_after_submit = True
     doc.db_update()
@@ -323,7 +323,6 @@ def make_material_produce(doc_name,partial=0):
         "qty_produced": wo_doc.qty - wo_doc.produced_qty,
         "qty_already_produced": wo_doc.produced_qty
     })
-
     bom = frappe.get_doc("BOM",wo_doc.bom_no)
     for res in bom.scrap_items:
         item_doc = frappe.get_doc("Item", res.item_code)
@@ -337,22 +336,35 @@ def make_material_produce(doc_name,partial=0):
             "type": "Scrap",
             "scheduled_qty": res.stock_qty
         })
+    if partial == "0":
+        total_cost_rm_consumed = total_cost_operation_consumed = 0
+        partial_pro = frappe.get_list("Material Produce", fields=['name'],
+                                      filters={'work_order': wo_doc.name, 'company': wo_doc.company, 'partial_produce': 1 , 'docstatus': 1})
+        for res in partial_pro:
+            pro_doc = frappe.get_doc("Material Produce", res.name)
+            total_cost_rm_consumed += pro_doc.cost_of_rm_consumed
+            total_cost_operation_consumed += pro_doc.cost_of_operation_consumed
+        mc.total_cost_of_rm_consumed = total_cost_rm_consumed
+        mc.total_cost_of_operation_consumed = total_cost_operation_consumed
+        mc.wo_actual_rm_cost = wo_doc.actual_rm_cost
+        mc.wo_actual_operation_cost = wo_doc.actual_operating_cost
+        mc.amount = wo_doc.actual_rm_cost + wo_doc.actual_operating_cost - total_cost_rm_consumed - total_cost_operation_consumed
     mc.insert(ignore_permissions=True)
     return mc.as_dict()
 
 @frappe.whitelist()
-def set_operation_rm_cost(doc_name,transfer_material_against=None):
+def set_operation_rm_cost(doc_name, transfer_material_against=None):
     wo = frappe.get_doc("Work Order",doc_name)
     total = 0
     for res in wo.required_items:
-        total += res.amount
+        total += res.required_qty * res.rate
     wo.planned_rm_cost = total
     wo.db_update()
 
-def set_rm_cost(doc,mehtod):
+def set_rm_cost(doc, mehtod):
     wo = doc
     total = 0
     for res in wo.required_items:
-        total += res.amount
+        total += res.required_qty * res.rate
     wo.planned_rm_cost = total
     wo.db_update()

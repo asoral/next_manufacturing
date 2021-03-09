@@ -76,7 +76,8 @@ function add_details_line(frm,line_obj){
             qty_produced: line_obj.qty_produced,
             batch_size: frm.doc.batch_size,
             work_order: frm.doc.work_order,
-            data:line_obj.data
+            data:line_obj.data,
+            amount: frm.doc.amount
         },
         callback: function (r) {
             if(r.message){

@@ -180,7 +180,7 @@ class MaterialProduce(Document):
 
 
 @frappe.whitelist()
-def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None,batch_size=None, data=None):
+def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None,batch_size=None, data=None, amount=None):
     if qty_produced:
         qty_produced = float(qty_produced)
     else:
@@ -206,6 +206,11 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
                 batch_option = item.batch_number_series
             else:
                 batch_option = str(work_order) + "-.##"
+        if not amount:
+            amount = 0
+        else:
+            amount = float(amount)
+        per_item_rate = amount / qty_produced
 
         if item.has_batch_no:
             remaining_size = qty_produced
@@ -219,6 +224,7 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
                             "qty_produced": batch_size,
                             "has_batch_no": item.has_batch_no,
                             "batch": batch_option if item.has_batch_no else None,
+                            "rate": per_item_rate,
                             "weight": item.weight_per_unit,
                             "line_ref": line_id
                         })
@@ -230,6 +236,7 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
                             "qty_produced": remaining_size,
                             "has_batch_no": item.has_batch_no,
                             "batch": batch_option if item.has_batch_no else None,
+                            "rate": per_item_rate,
                             "weight": item.weight_per_unit,
                             "line_ref": line_id
                         })
@@ -245,6 +252,7 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
                     "qty_produced": qty_produced,
                     "has_batch_no": item.has_batch_no,
                     "batch": batch_option if item.has_batch_no else None,
+                    "rate": per_item_rate,
                     "weight": item.weight_per_unit,
                     "line_ref": line_id
                 })
@@ -256,6 +264,7 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
                 "qty_produced": qty_produced,
                 "has_batch_no": item.has_batch_no,
                 "weight": item.weight_per_unit,
+                "rate": per_item_rate,
                 "line_ref": line_id
             })
         return lst
