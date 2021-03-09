@@ -8,6 +8,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import json
+from erpnext.manufacturing.doctype.bom.bom import add_additional_cost
 
 class MaterialProduce(Document):
     def set_produce_material(self):
@@ -170,6 +171,7 @@ class MaterialProduce(Document):
             #     total_transfer_qty += res.qty_produced
         stock_entry.from_bom = 1
         stock_entry.fg_completed_qty = total_transfer_qty
+        add_additional_cost(stock_entry, wo)
         stock_entry.set_actual_qty()
         stock_entry.set_missing_values()
         stock_entry.insert(ignore_permissions=True)
