@@ -1,14 +1,5 @@
 frappe.ui.form.on("Job Card",{
-
-//        if(frm.doc.docstatus == 4){
-//            frm.page.set_primary_action(__('Submit'), () => {
-//                frm.save('Submit')
-//            });
-//        }
     refresh: function(frm){
-//        if(frm.doc.docstatus == 0){
-//            frm.page.clear_primary_action();
-//        }
         if (frm.custom_buttons) frm.clear_custom_buttons();
 
         if (frm.doc.docstatus == 0 && (frm.doc.for_quantity > frm.doc.total_completed_qty || !frm.doc.for_quantity)

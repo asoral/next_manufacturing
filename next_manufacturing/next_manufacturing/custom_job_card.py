@@ -6,6 +6,10 @@ from frappe.utils import (flt, cint, time_diff_in_hours, get_datetime, get_link_
 class OverlapError(frappe.ValidationError): pass
 
 class CustomJobCard(JobCard):
+
+    def before_submit(self):
+        self.status = 'Completed'
+
     def validate_job_card(self):
         if not self.time_logs:
             frappe.throw(_("Time logs are required for {0} {1}")

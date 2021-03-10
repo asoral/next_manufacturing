@@ -40,6 +40,24 @@ class MaterialConsumption(Document):
 
     def on_submit(self):
         self.mak_stock_entry()
+        if self.job_card:
+            job = frappe.get_doc("Job Card",self.job_card)
+            for res in self.materials_to_consume:
+                total = 0
+                if res.data:
+                    for line in json.loads(res.data):
+                        total += line.get('qty_to_consume')
+                job_line = frappe.get_list("Job Card Item", filters={'parent': job.name, "item_code": res.item_code}, fields=["name"])
+                for l in job_line:
+                    line = frappe.get_doc("Job Card Item", l.name)
+                    if line.transferred_qty:
+                        line.transferred_qty += total
+                    else:
+                        line.transferred_qty = total
+                    line.db_update()
+
+
+
 
     def mak_stock_entry(self):
         if self.type == "Manual":
@@ -136,8 +154,6 @@ class MaterialConsumption(Document):
             stock_entry.validate()
             stock_entry.flags.ignore_validate_update_after_submit = True
             stock_entry.submit()
-
-
 
 @frappe.whitelist()
 def get_available_qty_data(line_id, company, item_code, warehouse, has_batch_no=None, data=None):

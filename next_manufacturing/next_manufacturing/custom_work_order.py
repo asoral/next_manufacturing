@@ -22,7 +22,7 @@ class CustomWorkOrder(WorkOrder):
                 if stock_entries:
                     status = "In Process"
                     produced_qty = stock_entries.get("Manufacture")
-                    if flt(produced_qty) >= flt(self.qty):
+                    if flt(produced_qty) >= flt(self.qty) or self.status == "Completed":
                         status = "Completed"
         else:
             status = 'Cancelled'

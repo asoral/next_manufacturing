@@ -136,6 +136,29 @@ class CustomStockEntry(StockEntry):
             if not pro_doc.operations:
                 pro_doc.set_actual_dates()
 
+    def check_if_operations_completed(self):
+        """Check if Time Sheets are completed against before manufacturing to capture operating costs."""
+        prod_order = frappe.get_doc("Work Order", self.work_order)
+        allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
+                                                              "overproduction_percentage_for_work_order"))
+
+        for d in prod_order.get("operations"):
+            total_completed_qty = flt(self.fg_completed_qty) + flt(prod_order.produced_qty)
+            completed_qty = d.completed_qty + (allowance_percentage / 100 * d.completed_qty)
+            if total_completed_qty > flt(completed_qty):
+                job_card = frappe.db.get_value('Job Card', {'operation_id': d.name}, 'name')
+                if not job_card:
+                    frappe.throw(_("Work Order {0}: Job Card not found for the operation {1}")
+                                 .format(self.work_order, d.operation))
+
+                work_order_link = frappe.utils.get_link_to_form('Work Order', self.work_order)
+                job_card_link = frappe.utils.get_link_to_form('Job Card', job_card)
+                # frappe.throw(_(
+                #     "Row #{0}: Operation {1} is not completed for {2} qty of finished goods in Work Order {3}. Please update operation status via Job Card {4}.")
+                #              .format(d.idx, frappe.bold(d.operation), frappe.bold(total_completed_qty),
+                #                      work_order_link, job_card_link), OperationsNotCompleteError)
+
+
 def produce_qty(doc, method):
     if doc.material_produce:
         pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
@@ -179,5 +202,5 @@ def set_material_cost(doc,method):
         pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
         if pro_doc.partial_produce:
             pro_doc.cost_of_rm_consumed = (wo.planned_rm_cost / wo.qty) * qty_produced
-            pro_doc.cost_of_operation_consumed = (wo.planned_operating_cost / wo.qty) * qty_produced
+            pro_doc.cost_of_operation_consumed = doc.total_additional_costs
         pro_doc.db_update()

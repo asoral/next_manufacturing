@@ -8,7 +8,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 import json
-from erpnext.manufacturing.doctype.bom.bom import add_additional_cost
+# from erpnext.manufacturing.doctype.bom.bom import add_additional_cost
+from frappe.utils import cint, cstr, flt
 
 class MaterialProduce(Document):
     def set_produce_material(self):
@@ -275,3 +276,61 @@ def add_details_line(line_id, work_order, item_code, warehouse,qty_produced=None
         return lst
     else:
         return json.loads(data)
+
+def add_additional_cost(stock_entry, work_order):
+    # Add non stock items cost in the additional cost
+    stock_entry.additional_costs = []
+    expenses_included_in_valuation = frappe.get_cached_value("Company", work_order.company,
+        "expenses_included_in_valuation")
+
+    add_non_stock_items_cost(stock_entry, work_order, expenses_included_in_valuation)
+    add_operations_cost(stock_entry, work_order, expenses_included_in_valuation)
+
+
+def add_non_stock_items_cost(stock_entry, work_order, expense_account):
+    bom = frappe.get_doc('BOM', work_order.bom_no)
+    table = 'exploded_items' if work_order.get('use_multi_level_bom') else 'items'
+
+    items = {}
+    for d in bom.get(table):
+        items.setdefault(d.item_code, d.amount)
+
+    non_stock_items = frappe.get_all('Item',
+        fields="name", filters={'name': ('in', list(items.keys())), 'ifnull(is_stock_item, 0)': 0}, as_list=1)
+
+    non_stock_items_cost = 0.0
+    for name in non_stock_items:
+        non_stock_items_cost += flt(items.get(name[0])) * flt(stock_entry.fg_completed_qty) / flt(bom.quantity)
+
+    if non_stock_items_cost:
+        stock_entry.append('additional_costs', {
+            'expense_account': expense_account,
+            'description': _("Non stock items"),
+            'amount': non_stock_items_cost
+        })
+
+def add_operations_cost(stock_entry, work_order=None, expense_account=None):
+    from erpnext.stock.doctype.stock_entry.stock_entry import get_operating_cost_per_unit
+    operating_cost_per_unit = get_operating_cost_per_unit(work_order, stock_entry.bom_no)
+
+    if stock_entry.material_produce:
+        mp_doc = frappe.get_doc("Material Produce", stock_entry.material_produce)
+        if not mp_doc.partial_produce:
+            operating_cost_per_unit = (mp_doc.wo_actual_operation_cost - mp_doc.total_cost_of_operation_consumed) / stock_entry.fg_completed_qty
+    if operating_cost_per_unit:
+        stock_entry.append('additional_costs', {
+            "expense_account": expense_account,
+            "description": _("Operating Cost as per Work Order / BOM"),
+            "amount": operating_cost_per_unit * flt(stock_entry.fg_completed_qty)
+        })
+
+    if work_order and work_order.additional_operating_cost and work_order.qty:
+        additional_operating_cost_per_unit = \
+            flt(work_order.additional_operating_cost) / flt(work_order.qty)
+
+        if additional_operating_cost_per_unit:
+            stock_entry.append('additional_costs', {
+                "expense_account": expense_account,
+                "description": "Additional Operating Cost",
+                "amount": additional_operating_cost_per_unit * flt(stock_entry.fg_completed_qty)
+            })
