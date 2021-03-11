@@ -113,5 +113,5 @@
    "value": "eval:doc.pre_planning == 1"
   }
  ],
- "sync_on_migrate": 1
+ "sync_on_migrate": 0
 }
