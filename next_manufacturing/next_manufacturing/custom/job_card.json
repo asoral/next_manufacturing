@@ -497,5 +497,5 @@
    "value": "0"
   }
  ],
- "sync_on_migrate": 0
+ "sync_on_migrate": 1
 }
