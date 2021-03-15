@@ -5,6 +5,7 @@ from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 from frappe.utils import flt
 from frappe.model.mapper import get_mapped_doc
 import json
+from datetime import datetime
 
 class StockOverProductionError(frappe.ValidationError): pass
 class CustomWorkOrder(WorkOrder):
@@ -24,6 +25,8 @@ class CustomWorkOrder(WorkOrder):
                     produced_qty = stock_entries.get("Manufacture")
                     if flt(produced_qty) >= flt(self.qty) or self.status == "Completed":
                         status = "Completed"
+                if self.status == "Completed":
+                    status = "Completed"
         else:
             status = 'Cancelled'
 
@@ -368,3 +371,59 @@ def set_rm_cost(doc, mehtod):
         total += res.required_qty * res.rate
     wo.planned_rm_cost = total
     wo.db_update()
+
+@frappe.whitelist()
+def make_material_request(doc_name,warehouse, status=None):
+    wo = frappe.get_doc("Work Order",doc_name)
+    mr = frappe.new_doc("Material Request")
+    mr.material_request_type = "Material Transfer"
+    mr.company = wo.company
+    mr.work_order = wo.name
+    if status == "Completed":
+        expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
+        item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
+                                                                     {'parent': wo.production_item,
+                                                                      'company': wo.company},
+                                                                     ["expense_account", "buying_cost_center"])
+        if not cost_center and not item_cost_center:
+            frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
+        itm_doc = frappe.get_doc("Item", wo.production_item)
+        mr.set_from_warehouse = wo.fg_warehouse
+        mr.append("items", {
+            "item_code": wo.production_item,
+            "item_name": itm_doc.item_name,
+            "description": itm_doc.description,
+            "qty": wo.produced_qty,
+            "uom": itm_doc.stock_uom,
+            "stock_uom": itm_doc.stock_uom,
+            "conversion_factor": 1,
+            "schedule_date": datetime.now().date(),
+            "warehouse": warehouse,
+            "cost_center": item_cost_center or cost_center
+        })
+    else:
+        mr.set_from_warehouse = warehouse
+        for res in wo.required_items:
+            qty = res.required_qty - res.transferred_qty
+            if qty > 0:
+                expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
+                item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
+                                                                             {'parent': res.item_code,
+                                                                              'company': wo.company},
+                                                                             ["expense_account", "buying_cost_center"])
+                if not cost_center and not item_cost_center:
+                    frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
+                itm_doc = frappe.get_doc("Item", res.item_code)
+                mr.append("items",{
+                    "item_code": res.item_code,
+                    "item_name": itm_doc.item_name,
+                    "description": itm_doc.description,
+                    "qty": qty,
+                    "uom": itm_doc.stock_uom,
+                    "stock_uom": itm_doc.stock_uom,
+                    "conversion_factor": 1,
+                    "schedule_date": datetime.now().date(),
+                    "warehouse": res.source_warehouse,
+                    "cost_center": item_cost_center or cost_center
+                })
+    return mr.as_dict()

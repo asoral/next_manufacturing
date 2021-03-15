@@ -7,6 +7,12 @@ frappe.ui.form.on("Work Order",{
         }
     },
     refresh: function(frm){
+        if(!frm.doc.__islocal && frm.doc.docstatus != 2){
+            frm.add_custom_button(__('Material Request'), function() {
+                make_material_request(frm,frm.doc.status)
+            }).addClass('btn-primary');
+        }
+
         if(frm.doc.docstatus == 4){
             frm.page.set_primary_action(__('Cancel'), () => {
                 frm.savecancel(this);
@@ -19,8 +25,6 @@ frappe.ui.form.on("Work Order",{
                     erpnext.work_order.create_pick_list(frm);
                 });
             }
-
-
             if(frm.doc.operations && frm.doc.operations.length
 			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
 			{
@@ -190,3 +194,61 @@ frappe.ui.form.on("Work Order",{
 //        frm.set_value("bom_weight",bmw);
 //    },
 });
+
+function make_material_request(frm,status){
+    let fields =  [
+        {
+            fieldtype: "Link",
+            label: __("Source Warehouse"),
+            options: "Warehouse",
+            fieldname: "warehouse",
+            reqd:1,
+            get_query: () => {
+                return {
+                    filters : {
+                        "company": frm.doc.company
+                    }
+                }
+            }
+        }
+    ]
+    if(status == "Completed"){
+        fields =  [
+            {
+                fieldtype: "Link",
+                label: __("Target Warehouse"),
+                options: "Warehouse",
+                fieldname: "warehouse",
+                reqd:1,
+                get_query: () => {
+                    return {
+                        filters : {
+                            "company": frm.doc.company
+                        }
+                    }
+                }
+            }
+        ]
+    }
+    frappe.prompt(
+        fields,
+        function(data) {
+            frm.call({
+                method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_request",
+                args: {
+                    doc_name: frm.doc.name,
+                    warehouse:data.warehouse,
+                    status:status
+                },
+                callback: function(r){
+                    if (r.message) {
+                        var doc = frappe.model.sync(r.message)[0];
+                        frappe.set_route("Form", doc.doctype, doc.name);
+                    }
+                }
+            });
+        },
+        __('Material Request'),
+        __("Make Additional Material")
+    );
+}
