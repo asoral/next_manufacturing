@@ -10,7 +10,7 @@ frappe.ui.form.on("Work Order",{
         if(!frm.doc.__islocal && frm.doc.docstatus != 2){
             frm.add_custom_button(__('Material Request'), function() {
                 make_material_request(frm,frm.doc.status)
-            }).addClass('btn-primary');
+            }, __('Create'));
         }
 
         if(frm.doc.docstatus == 4){
@@ -23,7 +23,7 @@ frappe.ui.form.on("Work Order",{
             if(frm.doc.status != "Completed"){
                 frm.add_custom_button(__('Create Pick List'), function() {
                     erpnext.work_order.create_pick_list(frm);
-                });
+                }, __('Create'));
             }
             if(frm.doc.operations && frm.doc.operations.length
 			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
@@ -37,7 +37,7 @@ frappe.ui.form.on("Work Order",{
                 if(not_completed && not_completed.length) {
                     frm.add_custom_button(__('Create Job Card'), () => {
                         frm.trigger("make_job_card");
-                    }).addClass('btn-primary');
+                    }, __('Create'));
                 }
 			}
 
