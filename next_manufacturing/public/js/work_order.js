@@ -7,6 +7,20 @@ frappe.ui.form.on("Work Order",{
         }
     },
     refresh: function(frm){
+        frm.set_query('rm_store_warehouse', function() {
+			return {
+				filters: {
+					'company': frm.doc.company
+				}
+			};
+		});
+        frm.set_query('fg_store_warehouse', function() {
+			return {
+				filters: {
+					'company': frm.doc.company
+				}
+			};
+		});
         if(!frm.doc.__islocal && frm.doc.docstatus != 2){
             frm.add_custom_button(__('Material Request'), function() {
                 make_material_request(frm,frm.doc.status)
@@ -196,59 +210,17 @@ frappe.ui.form.on("Work Order",{
 });
 
 function make_material_request(frm,status){
-    let fields =  [
-        {
-            fieldtype: "Link",
-            label: __("Source Warehouse"),
-            options: "Warehouse",
-            fieldname: "warehouse",
-            reqd:1,
-            get_query: () => {
-                return {
-                    filters : {
-                        "company": frm.doc.company
-                    }
-                }
+    frm.call({
+        method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_request",
+        args: {
+            doc_name: frm.doc.name,
+            status:status
+        },
+        callback: function(r){
+            if (r.message) {
+                var doc = frappe.model.sync(r.message)[0];
+                frappe.set_route("Form", doc.doctype, doc.name);
             }
         }
-    ]
-    if(status == "Completed"){
-        fields =  [
-            {
-                fieldtype: "Link",
-                label: __("Target Warehouse"),
-                options: "Warehouse",
-                fieldname: "warehouse",
-                reqd:1,
-                get_query: () => {
-                    return {
-                        filters : {
-                            "company": frm.doc.company
-                        }
-                    }
-                }
-            }
-        ]
-    }
-    frappe.prompt(
-        fields,
-        function(data) {
-            frm.call({
-                method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_request",
-                args: {
-                    doc_name: frm.doc.name,
-                    warehouse:data.warehouse,
-                    status:status
-                },
-                callback: function(r){
-                    if (r.message) {
-                        var doc = frappe.model.sync(r.message)[0];
-                        frappe.set_route("Form", doc.doctype, doc.name);
-                    }
-                }
-            });
-        },
-        __('Material Request'),
-        __("Make Additional Material")
-    );
+    });
 }

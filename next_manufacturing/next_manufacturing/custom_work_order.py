@@ -372,13 +372,16 @@ def set_rm_cost(doc, mehtod):
     wo.db_update()
 
 @frappe.whitelist()
-def make_material_request(doc_name,warehouse, status=None):
+def make_material_request(doc_name, status=None):
     wo = frappe.get_doc("Work Order",doc_name)
     mr = frappe.new_doc("Material Request")
     mr.material_request_type = "Material Transfer"
     mr.company = wo.company
     mr.work_order = wo.name
     if status == "Completed":
+        if not wo.fg_store_warehouse:
+            frappe.throw(_("Please select FG Store Warehouse First!"))
+
         expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
         item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
                                                                      {'parent': wo.production_item,
@@ -397,11 +400,13 @@ def make_material_request(doc_name,warehouse, status=None):
             "stock_uom": itm_doc.stock_uom,
             "conversion_factor": 1,
             "schedule_date": datetime.now().date(),
-            "warehouse": warehouse,
+            "warehouse": wo.fg_store_warehouse,
             "cost_center": item_cost_center or cost_center
         })
     else:
-        mr.set_from_warehouse = warehouse
+        if not wo.rm_store_warehouse:
+            frappe.throw(_("Please select RM Store Warehouse First!"))
+        mr.set_from_warehouse = wo.rm_store_warehouse
         for res in wo.required_items:
             qty = res.required_qty - res.transferred_qty
             if qty > 0:
