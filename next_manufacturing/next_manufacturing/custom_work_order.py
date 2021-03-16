@@ -374,6 +374,9 @@ def set_rm_cost(doc, mehtod):
 @frappe.whitelist()
 def make_material_request(doc_name, status=None):
     wo = frappe.get_doc("Work Order",doc_name)
+    if not wo.rm_cost_center:
+        frappe.throw(_("Please select RM Cost Center First!"))
+
     mr = frappe.new_doc("Material Request")
     mr.material_request_type = "Material Transfer"
     mr.company = wo.company
@@ -381,14 +384,6 @@ def make_material_request(doc_name, status=None):
     if status == "Completed":
         if not wo.fg_store_warehouse:
             frappe.throw(_("Please select FG Store Warehouse First!"))
-
-        expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
-        item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
-                                                                     {'parent': wo.production_item,
-                                                                      'company': wo.company},
-                                                                     ["expense_account", "buying_cost_center"])
-        if not cost_center and not item_cost_center:
-            frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
         itm_doc = frappe.get_doc("Item", wo.production_item)
         mr.set_from_warehouse = wo.fg_warehouse
         mr.append("items", {
@@ -401,7 +396,7 @@ def make_material_request(doc_name, status=None):
             "conversion_factor": 1,
             "schedule_date": datetime.now().date(),
             "warehouse": wo.fg_store_warehouse,
-            "cost_center": item_cost_center or cost_center
+            "cost_center": wo.rm_cost_center
         })
     else:
         if not wo.rm_store_warehouse:
@@ -410,13 +405,6 @@ def make_material_request(doc_name, status=None):
         for res in wo.required_items:
             qty = res.required_qty - res.transferred_qty
             if qty > 0:
-                expense_account, cost_center = frappe.db.get_values("Company", wo.company, ["default_expense_account", "cost_center"])[0]
-                item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
-                                                                             {'parent': res.item_code,
-                                                                              'company': wo.company},
-                                                                             ["expense_account", "buying_cost_center"])
-                if not cost_center and not item_cost_center:
-                    frappe.throw(_("Please update default Cost Center for company {0}").format(wo.company))
                 itm_doc = frappe.get_doc("Item", res.item_code)
                 mr.append("items",{
                     "item_code": res.item_code,
@@ -428,6 +416,6 @@ def make_material_request(doc_name, status=None):
                     "conversion_factor": 1,
                     "schedule_date": datetime.now().date(),
                     "warehouse": res.source_warehouse,
-                    "cost_center": item_cost_center or cost_center
+                    "cost_center": wo.rm_cost_center
                 })
     return mr.as_dict()

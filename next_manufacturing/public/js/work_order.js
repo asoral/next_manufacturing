@@ -7,6 +7,13 @@ frappe.ui.form.on("Work Order",{
         }
     },
     refresh: function(frm){
+        frm.set_query('rm_cost_center', function() {
+			return {
+				filters: {
+					'company': frm.doc.company
+				}
+			};
+		});
         frm.set_query('rm_store_warehouse', function() {
 			return {
 				filters: {
