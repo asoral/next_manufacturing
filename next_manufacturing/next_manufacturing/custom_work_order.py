@@ -96,8 +96,8 @@ class CustomWorkOrder(WorkOrder):
                 # frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
 
 def after_insert(self,method):
-    sg =0.0
-    cnt =0
+    sg = 0.0
+    cnt = 0
     bmw = 0.0
 
     for itm in self.required_items:
@@ -123,8 +123,8 @@ def after_insert(self,method):
 @frappe.whitelist()
 def after_save(doc_name):
     doc = frappe.get_doc("Work Order",doc_name)
-    sg =0.0
-    cnt =0
+    sg = 0.0
+    cnt = 0
     bmw = 0.0
 
     for itm in doc.required_items:
@@ -145,7 +145,6 @@ def after_save(doc_name):
             rm += itm.required_qty * itm.weight_per_unit
 
     doc.rm_weight = rm
-
     doc.fg_weight = doc.qty * doc.weight_per_unit
 
     if rm > 0:

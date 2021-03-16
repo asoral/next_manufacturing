@@ -104,6 +104,8 @@ doc_events = {
 			"next_manufacturing.next_manufacturing.custom_work_order.set_rm_cost"
 			],
 		"before_save": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+		"validate": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
+		"before_submit": "next_manufacturing.next_manufacturing.custom_work_order.after_insert",
 		"on_submit": "next_manufacturing.next_manufacturing.custom_work_order.change_status",
 	},
 	"Stock Entry": {
