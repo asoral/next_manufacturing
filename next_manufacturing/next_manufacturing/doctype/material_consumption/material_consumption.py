@@ -55,6 +55,8 @@ class MaterialConsumption(Document):
                     else:
                         line.transferred_qty = total
                     line.db_update()
+                job.transferred_qty = total
+                job.db_update()
 
 
 
