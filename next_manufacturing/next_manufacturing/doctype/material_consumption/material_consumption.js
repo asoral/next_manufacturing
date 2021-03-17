@@ -54,6 +54,9 @@ frappe.ui.form.on('Material Consumption', {
 
 frappe.ui.form.on('Materials to Consume Items', {
     show_details: function(frm, cdt, cdn) {
+        if (frm.doc.__islocal){
+            frappe.throw(__("Please Save Material Consumption first!"))
+        }
         var row = locals[cdt][cdn];
         get_available_qty_data(frm,row)
     },

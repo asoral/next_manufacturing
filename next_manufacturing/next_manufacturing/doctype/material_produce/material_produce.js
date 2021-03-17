@@ -27,6 +27,9 @@ frappe.ui.form.on('Material Produce', {
 
 frappe.ui.form.on('Material Produce Item', {
     show_details: function(frm, cdt, cdn) {
+        if (frm.doc.__islocal){
+            frappe.throw(__("Please Save Material Produce first!"))
+        }
         var row = locals[cdt][cdn];
         add_details_line(frm,row)
     },

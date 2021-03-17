@@ -8,14 +8,16 @@ import json
 from datetime import datetime
 
 class StockOverProductionError(frappe.ValidationError): pass
+
 class CustomWorkOrder(WorkOrder):
     def get_status(self, status=None):
         '''Return the status based on stock entries against this work order'''
         if not status:
             status = self.status
-
+        print("-----my------", self.docstatus)
         if self.docstatus == 0:
             status = 'Draft'
+
         elif self.docstatus in [1,4]:
             if status != 'Stopped':
                 stock_entries = frappe._dict(frappe.db.sql("""select purpose, sum(fg_completed_qty) from `tabStock Entry` where work_order=%s and docstatus=1 group by purpose""", self.name))
@@ -257,7 +259,7 @@ def make_consume_material(doc_name):
             "status": "Not Assigned",
             "qty_to_issue": res.required_qty
         })
-    mc.insert(ignore_permissions=True)
+    # mc.insert(ignore_permissions=True)
     return mc.as_dict()
 
 
@@ -351,7 +353,7 @@ def make_material_produce(doc_name,partial=0):
         mc.wo_actual_rm_cost = wo_doc.actual_rm_cost
         mc.wo_actual_operation_cost = wo_doc.actual_operating_cost
         mc.amount = wo_doc.actual_rm_cost + wo_doc.actual_operating_cost - total_cost_rm_consumed - total_cost_operation_consumed
-    mc.insert(ignore_permissions=True)
+    # mc.insert(ignore_permissions=True)
     return mc.as_dict()
 
 @frappe.whitelist()

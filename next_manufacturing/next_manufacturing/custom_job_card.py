@@ -114,7 +114,7 @@ def make_material_consumption(doc_name):
                 "status": "Not Assigned",
                 "qty_to_issue": res.required_qty
             })
-        mc.insert(ignore_permissions=True)
+        # mc.insert(ignore_permissions=True)
         return mc.as_dict()
 
 @frappe.whitelist()

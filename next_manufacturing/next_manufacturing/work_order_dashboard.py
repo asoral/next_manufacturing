@@ -12,7 +12,7 @@ def get_data(data):
 		],
 		'Material': [
 			{
-				'label': _('Transactions'),
+				'label': _('Materials'),
 				'items': ['Material Request', 'Material Consumption','Material Produce']
 			}
 		]
