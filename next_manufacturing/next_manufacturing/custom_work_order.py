@@ -14,7 +14,6 @@ class CustomWorkOrder(WorkOrder):
         '''Return the status based on stock entries against this work order'''
         if not status:
             status = self.status
-        print("-----my------", self.docstatus)
         if self.docstatus == 0:
             status = 'Draft'
 
