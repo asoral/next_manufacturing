@@ -16,6 +16,13 @@ frappe.ui.form.on('Material Consumption', {
         });
     },
     get_items_from_pick_list: function(frm){
+        let filters = {
+            "work_order": frm.doc.work_order,
+            "docstatus":1
+        }
+        if (frm.doc.job_card){
+            filters['job_card'] = frm.doc.job_card
+        }
         frappe.prompt(
             [
                 {
@@ -26,10 +33,7 @@ frappe.ui.form.on('Material Consumption', {
                     reqd:1,
                     get_query: () => {
                         return {
-                            filters : {
-                                "work_order": frm.doc.work_order,
-                                "docstatus":1
-                            }
+                            filters
                         }
                     }
                 },

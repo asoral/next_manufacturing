@@ -3,6 +3,8 @@ import frappe
 from frappe import _,bold
 from erpnext.manufacturing.doctype.job_card.job_card import JobCard
 from frappe.utils import (flt, cint, time_diff_in_hours, get_datetime, get_link_to_form)
+from frappe.model.mapper import get_mapped_doc
+
 class OverlapError(frappe.ValidationError): pass
 
 class CustomJobCard(JobCard):
@@ -164,3 +166,34 @@ def set_pre_planning_line(doc, method):
 def transferred_qty_validate(doc, method):
     if not doc.transferred_qty:
         frappe.throw(_("Consume Material Qty should be greater than Zero. Please Consume Material first!"))
+
+@frappe.whitelist()
+def make_material_request(source_name, target_doc=None):
+    def update_item(obj, target, source_parent):
+        target.warehouse = source_parent.wip_warehouse
+
+    def set_missing_values(source, target):
+        target.material_request_type = "Material Transfer"
+        wo = frappe.get_doc("Work Order", source.work_order)
+        target.material_request_type = "Material Transfer"
+        target.set_from_warehouse = wo.rm_store_warehouse
+
+    doclist = get_mapped_doc("Job Card", source_name, {
+        "Job Card": {
+            "doctype": "Material Request",
+            "field_map": {
+                "name": "job_card",
+                "work_order": "work_order",
+            },
+        },
+        "Job Card Item": {
+            "doctype": "Material Request Item",
+            "field_map": {
+                "required_qty": "qty",
+                "uom": "stock_uom"
+            },
+            "postprocess": update_item,
+        }
+    }, target_doc, set_missing_values)
+
+    return doclist

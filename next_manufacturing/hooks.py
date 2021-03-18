@@ -152,7 +152,9 @@ doc_events = {
 # ------------------------------
 #
 override_whitelisted_methods = {
-	"erpnext.manufacturing.doctype.work_order.work_order.create_pick_list": "next_manufacturing.next_manufacturing.custom_work_order.create_pick_list"
+	"erpnext.manufacturing.doctype.work_order.work_order.create_pick_list": "next_manufacturing.next_manufacturing.custom_work_order.create_pick_list",
+	"erpnext.manufacturing.doctype.job_card.job_card.make_material_request": "next_manufacturing.next_manufacturing.custom_job_card.make_material_request",
+	"erpnext.stock.doctype.material_request.material_request.create_pick_list": "next_manufacturing.next_manufacturing.custom_material_request.create_pick_list"
 }
 #
 # each overriding function accepts a `data` argument;

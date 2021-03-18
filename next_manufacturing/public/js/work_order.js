@@ -28,11 +28,7 @@ frappe.ui.form.on("Work Order",{
 				}
 			};
 		});
-        if(!frm.doc.__islocal && frm.doc.docstatus != 2){
-            frm.add_custom_button(__('Material Request'), function() {
-                make_material_request(frm,frm.doc.status)
-            }, __('Create'));
-        }
+
 
         if(frm.doc.docstatus == 4){
             frm.page.set_primary_action(__('Cancel'), () => {
@@ -41,28 +37,9 @@ frappe.ui.form.on("Work Order",{
 
             frm.trigger('show_progress_for_items');
 			frm.trigger('show_progress_for_operations');
-            if(frm.doc.status != "Completed"){
-                frm.add_custom_button(__('Create Pick List'), function() {
-                    erpnext.work_order.create_pick_list(frm);
-                }, __('Create'));
-            }
-            if(frm.doc.operations && frm.doc.operations.length
-			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
-			{
-			    const not_completed = frm.doc.operations.filter(d => {
-				if(d.status != 'Completed') {
-                        return true;
-                    }
-                });
 
-                if(not_completed && not_completed.length) {
-                    frm.add_custom_button(__('Create Job Card'), () => {
-                        frm.trigger("make_job_cards");
-                    }, __('Create'));
-                }
-			}
 
-            if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.transfer_material_against != 'Work Order' && frm.doc.status != "Completed")
+            if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.status != "Completed")
             {
                 frm.add_custom_button(__('Consume Material'),function() {
                 frappe.call({
@@ -128,6 +105,26 @@ frappe.ui.form.on("Work Order",{
                     );
                 });
             }
+            if(frm.doc.status != "Completed"){
+                frm.add_custom_button(__('Create Pick List'), function() {
+                    erpnext.work_order.create_pick_list(frm);
+                }, __('Create'));
+            }
+            if(frm.doc.operations && frm.doc.operations.length
+			&& frm.doc.qty != frm.doc.material_transferred_for_manufacturing)
+			{
+			    const not_completed = frm.doc.operations.filter(d => {
+				if(d.status != 'Completed') {
+                        return true;
+                    }
+                });
+
+                if(not_completed && not_completed.length) {
+                    frm.add_custom_button(__('Create Job Card'), () => {
+                        frm.trigger("make_job_cards");
+                    }, __('Create'));
+                }
+			}
             if (frm.doc.status == 'In Process')
             {
                 frm.add_custom_button(__('Partial'),function() {
@@ -161,6 +158,18 @@ frappe.ui.form.on("Work Order",{
                         }
                     });
                 }, __('Produce'));
+            }
+        }
+        if(!frm.doc.__islocal && frm.doc.docstatus != 2){
+            if(frm.doc.transfer_material_against != 'Job Card'){
+                frm.add_custom_button(__('Material Request'), function() {
+                    make_material_request(frm,frm.doc.status)
+                }, __('Create'));
+            }
+            if(frm.doc.status == "Completed"){
+                frm.add_custom_button(__('Material Request'), function() {
+                    make_material_request(frm,frm.doc.status)
+                }, __('Create'));
             }
         }
         if(!frm.doc.__islocal){
