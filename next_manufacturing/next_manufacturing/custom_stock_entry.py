@@ -177,6 +177,7 @@ def change_work_order_status(doc, method):
     if doc.completed_work_order:
         wo = frappe.get_doc("Work Order",doc.work_order)
         wo.status = "Completed"
+        wo.docstatus = 1
         wo.db_update()
 
 def set_material_cost(doc,method):

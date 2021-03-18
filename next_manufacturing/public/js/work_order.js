@@ -185,6 +185,11 @@ frappe.ui.form.on("Work Order",{
                 }
             });
         }
+        if(!frm.doc.__islocal){
+            frm.add_custom_button(__("Print"), function() {
+                frm.print_doc();
+            }).addClass('btn-danger');
+        }
     },
     make_job_cards: function(frm) {
 		let qty = 0;
