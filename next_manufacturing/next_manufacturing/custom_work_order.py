@@ -420,3 +420,19 @@ def make_material_request(doc_name, status=None):
                     "cost_center": wo.rm_cost_center
                 })
     return mr.as_dict()
+
+@frappe.whitelist()
+def get_job_card_name(line):
+    lst = []
+    query = frappe.db.sql("""select name, employee,employee_name from `tabJob Card` where work_order = %s and operation = %s limit 1""",(line.parent,line.operation), as_dict=True)
+    if query:
+        if query[0].get('name'):
+            lst.append(query[0].get('name'))
+        else:
+            lst.append("")
+        if query[0].get('employee'):
+            str1 = str(query[0].get('employee')) + " ["+str(query[0].get('employee_name')) + "]"
+            lst.append(str1)
+        else:
+            lst.append("")
+    return lst

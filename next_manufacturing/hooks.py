@@ -165,6 +165,11 @@ override_doctype_dashboards = {
 	"Job Card": "next_manufacturing.next_manufacturing.job_card_dashboard.get_data"
 }
 
+jenv = {
+	"methods": [
+		"get_job_card_name:next_manufacturing.next_manufacturing.custom_work_order.get_job_card_name",
+	]
+}
 # exempt linked doctypes from being automatically cancelled
 #
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]

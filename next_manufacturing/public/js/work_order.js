@@ -5,6 +5,10 @@ frappe.ui.form.on("Work Order",{
                 frm.savecancel(this);
             });
         }
+        if(frm.doc.docstatus == 1){
+            if (frm.custom_buttons) frm.clear_custom_buttons();
+        }
+
     },
     refresh: function(frm){
         frm.set_query('rm_cost_center', function() {
@@ -160,13 +164,11 @@ frappe.ui.form.on("Work Order",{
                 }, __('Produce'));
             }
         }
+        if(frm.doc.docstatus == 1){
+            if (frm.custom_buttons) frm.clear_custom_buttons();
+        }
         if(!frm.doc.__islocal && frm.doc.docstatus != 2){
-            if(frm.doc.transfer_material_against != 'Job Card'){
-                frm.add_custom_button(__('Material Request'), function() {
-                    make_material_request(frm,frm.doc.status)
-                }, __('Create'));
-            }
-            if(frm.doc.status == "Completed"){
+            if(frm.doc.transfer_material_against != 'Job Card' || frm.doc.status == "Completed"){
                 frm.add_custom_button(__('Material Request'), function() {
                     make_material_request(frm,frm.doc.status)
                 }, __('Create'));
