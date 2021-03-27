@@ -113,7 +113,7 @@ def after_insert(self,method):
     rm = 0.0
     for itm in self.required_items:
         if itm.type == "RM":
-            rm += itm.required_qty * itm.weight_per_unit
+            rm += float(itm.required_qty) * float(itm.weight_per_unit)
     self.rm_weight = rm
 
     self.fg_weight = self.qty * self.weight_per_unit
@@ -234,8 +234,10 @@ def get_filtered_item(doctype, txt, searchfield, start, page_len, filters):
             items = frappe.db.sql("select distinct name,item_name from `tabItem` where is_stock_item = 1 and disabled = 0")
             return items
         else:
-            items = frappe.db.sql("""select distinct i.item_code,i.item_name from `tabBOM` as b inner join `tabBOM Item` as i on i.parent = b.name 
-                        where allowed_to_change_qty_in_wo = 1""")
+            # items = frappe.db.sql("""select distinct i.item_code,i.item_name from `tabBOM` as b inner join `tabBOM Item` as i on i.parent = b.name 
+            #              where allowed_to_change_qty_in_wo = 1""")
+            query = """select item_code from `tabBOM Item` where parent="{0}";""".format(filters.get('bom'))
+            items = frappe.db.sql(query)
             return items
 
 
@@ -436,3 +438,14 @@ def get_job_card_name(line):
         else:
             lst.append("")
     return lst
+
+@frappe.whitelist()
+def show_btn(bom):
+    doc = frappe.get_doc("BOM",bom)
+    btn = False
+    if(doc.allow_adding_items == 0):
+        for i in doc.items:
+            if(i.allowed_to_change_qty_in_wo == 1):
+                btn = True
+    print(btn)
+    return btn

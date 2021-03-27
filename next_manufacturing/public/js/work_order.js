@@ -62,52 +62,24 @@ frappe.ui.form.on("Work Order",{
             }
             if(frm.doc.transfer_material_against != 'Job Card' && frm.doc.status == 'In Process')
             {
-                frm.add_custom_button(__('Add Additional Material'), function() {
-                    frappe.prompt(
-                        [
-                            {
-                                fieldtype: "Link",
-                                label: __("Item"),
-                                options: "Item",
-                                fieldname: "item_code",
-                                reqd:1,
-                                get_query: () => {
-                                    return {
-                                        query: "next_manufacturing.next_manufacturing.custom_work_order.get_filtered_item",
-                                        filters : {
-                                            "is_stock_item": 1,
-                                            "bom": frm.doc.bom_no
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                "fieldtype": "Column Break"
-                            },
-                            {
-                                fieldtype: "Float",
-                                label: __("Required Qty"),
-                                fieldname: "required_qty",
-                                reqd:1
-                            }
-                        ],
-                        function(data) {
-                            frm.call({
-                                method: "next_manufacturing.next_manufacturing.custom_work_order.add_additional_fabric",
-                                args: {
-                                    doc_name: frm.doc.name,
-                                    item_code:data.item_code,
-                                    required_qty:data.required_qty,
-                                },
-                                callback: function(r){
-                                    frm.reload_doc()
-                                }
+                frappe.call({
+                    method:'next_manufacturing.next_manufacturing.custom_work_order.show_btn', 
+                    args: {
+                        "bom": frm.doc.bom_no
+                    },
+                    callback: function(resp){
+                        if(resp.message === true){
+                            frm.add_custom_button(__('Add Additional Material'), function() {
+                                frappe.new_doc("Additional Items", {"work_order" : frm.doc.name, "user": frappe.session.user, 'date': frappe.datetime.now_date()})
+                                
                             });
-                        },
-                        __('Additional Material'),
-                        __("Add Additional Material")
-                    );
-                });
+                        }
+                    }
+                })
+                // frm.add_custom_button(__('Add Additional Material'), function() {
+                //     frappe.new_doc("Additional Items", {"work_order" : frm.doc.name, "user": frappe.session.user, 'date': frappe.datetime.now_date()})
+                    
+                // });
             }
             if(frm.doc.status != "Completed"){
                 frm.add_custom_button(__('Create Pick List'), function() {
