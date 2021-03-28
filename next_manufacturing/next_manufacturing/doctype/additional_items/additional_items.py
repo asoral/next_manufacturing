@@ -6,7 +6,7 @@ from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime, nowdate
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
 class AdditionalItems(Document):
-	def onload(self):
+	def after_save(self):
 		self.date= nowdate()
 		self.user = frappe.session.user
 	def bom_wise_item(self):
@@ -34,7 +34,7 @@ class AdditionalItems(Document):
 			job_card.append(job.get('name'))
 		return job_card
 
-	def before_save(self):
+	def before_submit(self):
 		work_order = frappe.get_doc("Work Order", {'name':self.work_order})
 		wo_item = []
 		wo_item_qty = []
@@ -51,12 +51,18 @@ class AdditionalItems(Document):
 				item_qty = item.get('qty')
 				total_qty = int(old_qty) + int(item_qty)
 				amount = total_qty * int(item_rate[0].get("rate"))
-				query = """UPDATE `tabWork Order Item` SET required_qty = {0}, amount = {1}  WHERE parent='{2}';""".format(total_qty,amount,self.work_order)
+				query = """UPDATE `tabWork Order Item` SET required_qty = {0}, amount = {1}  WHERE parent='{2} and item_code='{3}';""".format(total_qty,amount,self.work_order,item.get("item"))
 				frappe.db.sql(query)
 				frappe.db.commit()
 			else:
 				item_master = frappe.db.get_value('Item', {'item_code':item.get('item')},['item_name','include_item_in_manufacturing','description'], as_dict = 1)
+				
+				
 				doc = frappe.get_doc("Work Order", self.work_order)
+
+				rate = frappe.db.get_value("Bin", {"item_code":item.get("item"),"warehouse":doc.source_warehouse},['valuation_rate'], as_dict = 1).get('valuation_rate')
+				amt = float(item.get("qty")) * float(rate)
+
 				doc.append("required_items", {
 					"item_name": item_master.get("item_name"),
 					"item_code": item.get("item"),
@@ -68,8 +74,9 @@ class AdditionalItems(Document):
 					"type": "RM",
 					'available_qty_at_source_warehouse': item.get("current_stock"),
 					"weight_per_unit": item.get("weight_per_unit"),
-					"description" : item_master.get("description")
+					"description" : item_master.get("description"),
+					'rate': rate,
+					'amount': amt
+
 				})
 				doc.save(ignore_permissions= True)
-		self.date= nowdate()
-		self.user = frappe.session.user

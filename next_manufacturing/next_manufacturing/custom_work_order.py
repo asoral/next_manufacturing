@@ -384,6 +384,7 @@ def make_material_request(doc_name, status=None):
     mr.material_request_type = "Material Transfer"
     mr.company = wo.company
     mr.work_order = wo.name
+    mr.set_warehouse = wo.source_warehouse
     if status == "Completed":
         if not wo.fg_store_warehouse:
             frappe.throw(_("Please select FG Store Warehouse First!"))
@@ -406,7 +407,7 @@ def make_material_request(doc_name, status=None):
             frappe.throw(_("Please select RM Store Warehouse First!"))
         mr.set_from_warehouse = wo.rm_store_warehouse
         for res in wo.required_items:
-            qty = res.required_qty - res.transferred_qty
+            qty = res.required_qty - res.available_qty_at_source_warehouse
             if qty > 0:
                 itm_doc = frappe.get_doc("Item", res.item_code)
                 mr.append("items",{
@@ -418,7 +419,7 @@ def make_material_request(doc_name, status=None):
                     "stock_uom": itm_doc.stock_uom,
                     "conversion_factor": 1,
                     "schedule_date": datetime.now().date(),
-                    "warehouse": res.source_warehouse,
+                    "warehouse": wo.source_warehouse,
                     "cost_center": wo.rm_cost_center
                 })
     return mr.as_dict()
@@ -447,5 +448,6 @@ def show_btn(bom):
         for i in doc.items:
             if(i.allowed_to_change_qty_in_wo == 1):
                 btn = True
-    print(btn)
+    if(doc.allow_adding_items == 1):
+        btn = True
     return btn
