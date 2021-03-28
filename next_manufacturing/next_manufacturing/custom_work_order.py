@@ -381,6 +381,7 @@ def make_material_request(doc_name, status=None):
         frappe.throw(_("Please select RM Cost Center First!"))
 
     mr = frappe.new_doc("Material Request")
+    mr.material_transfer_to_mfg = 1
     mr.material_request_type = "Material Transfer"
     mr.company = wo.company
     mr.work_order = wo.name

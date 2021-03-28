@@ -46,7 +46,15 @@ class CustomStockEntry(StockEntry):
         self.set_actual_qty()
         self.calculate_rate_and_amount()
         self.validate_putaway_capacity()
-
+    
+    #custom code
+    def set_stock_entry_type(self):
+        mr = frappe.db.get_value("Pick", {"name":self.pick_list}, ['material_request'])
+        material_transfer_to_mfg = frappe.db.get_value("Material Request",{'name':mr}, ['material_transfer_to_mfg'])                                         
+        if self.purpose and material_transfer_to_mfg == 0:
+            self.stock_entry_type = frappe.get_cached_value('Stock Entry Type',{'purpose': self.purpose}, 'name')
+        if self.purpose and material_transfer_to_mfg == 1:
+            self.stock_entry_type = "Material Transfer"
     #custom method
     def make_batches(self, warehouse_field):
         '''Create batches if required. Called before submit'''
