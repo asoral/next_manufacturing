@@ -51,7 +51,7 @@ class AdditionalItems(Document):
 				item_qty = item.get('qty')
 				total_qty = int(old_qty) + int(item_qty)
 				amount = total_qty * int(item_rate[0].get("rate"))
-				query = """UPDATE `tabWork Order Item` SET required_qty = {0}, amount = {1}  WHERE parent='{2} and item_code='{3}';""".format(total_qty,amount,self.work_order,item.get("item"))
+				query = """UPDATE `tabWork Order Item` SET required_qty = {0}, amount = {1}  WHERE parent='{2}' and item_code='{3}';""".format(total_qty,amount,self.work_order,item.get("item"))
 				frappe.db.sql(query)
 				frappe.db.commit()
 			else:
