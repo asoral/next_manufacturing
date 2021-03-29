@@ -421,7 +421,8 @@ def make_material_request(doc_name, status=None):
                     "conversion_factor": 1,
                     "schedule_date": datetime.now().date(),
                     "warehouse": wo.source_warehouse,
-                    "cost_center": wo.rm_cost_center
+                    "cost_center": wo.rm_cost_center,
+                    "from_warehouse": wo.rm_store_warehouse
                 })
     return mr.as_dict()
 
