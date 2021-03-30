@@ -1,6 +1,6 @@
 frappe.ui.form.on("Work Order",{
     onload: function(frm){
-        if(frm.doc.docstatus == 4){
+        if(frm.doc.docstatus == 1){
             frm.page.set_primary_action(__('Cancel'), () => {
                 frm.savecancel(this);
             });
@@ -34,7 +34,7 @@ frappe.ui.form.on("Work Order",{
 		});
 
 
-        if(frm.doc.docstatus == 4){
+        if(frm.doc.docstatus == 1){
             frm.page.set_primary_action(__('Cancel'), () => {
                 frm.savecancel(this);
             });
