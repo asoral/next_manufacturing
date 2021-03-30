@@ -34,7 +34,7 @@ frappe.ui.form.on("Work Order",{
 		});
 
 
-        if(frm.doc.docstatus == 1){
+        if(frm.doc.custom_status == 1){
             frm.page.set_primary_action(__('Cancel'), () => {
                 frm.savecancel(this);
             });

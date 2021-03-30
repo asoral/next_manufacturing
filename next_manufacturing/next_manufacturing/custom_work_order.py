@@ -156,7 +156,8 @@ def after_save(doc_name):
 
 def change_status(doc,mehtod):
     print("--------change_status----------")
-    doc.docstatus = 1
+    doc.custom_status = 1
+    #doc.docstatus = 4
     doc.flags.ignore_validate_update_after_submit = True
     doc.db_update()
 
