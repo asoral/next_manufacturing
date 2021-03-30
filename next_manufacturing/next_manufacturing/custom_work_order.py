@@ -384,7 +384,7 @@ def make_material_request(doc_name, status=None):
     mr.material_transfer_to_mfg = 1
     mr.material_request_type = "Material Transfer"
     mr.company = wo.company
-    mr.work_order = wo.name
+    #mr.work_order = wo.name
     mr.set_warehouse = wo.source_warehouse
     if status == "Completed":
         if not wo.fg_store_warehouse:
