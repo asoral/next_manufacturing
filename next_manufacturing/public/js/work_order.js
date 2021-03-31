@@ -31,13 +31,40 @@ frappe.ui.form.on("Work Order", {
         }
         if(frm.doc.status == "In Process"){
             frm.add_custom_button(__('Add Additional Items'),function() {
-                console.log("*****************")
+                console.log('****', frappe.session.user)
+                console.log(frappe.datetime.now_date())
+                var usr = frappe.session.user
+                frappe.new_doc("Additional Items", {"work_order" : frm.doc.name, "user": usr, 'date': frappe.datetime.now_date()})
             }, __('Functions'))
             frm.add_custom_button(__('Partial'),function() {
-                console.log("*****************")
+                frappe.call({
+                    method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_produce",
+                    args: {
+                      doc_name: frm.doc.name,
+                      partial: 1
+                    },
+                    callback: function(r){
+                        if (r.message) {
+                            var doc = frappe.model.sync(r.message)[0];
+                            frappe.set_route("Form", doc.doctype, doc.name);
+                        }
+                    }
+                });
             }, __('Functions'))
             frm.add_custom_button(__('Complete'),function() {
-                console.log("*****************")
+                frappe.call({
+                    method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_produce",
+                    args: {
+                      doc_name: frm.doc.name,
+                      partial: 0
+                    },
+                    callback: function(r){
+                        if (r.message) {
+                            var doc = frappe.model.sync(r.message)[0];
+                            frappe.set_route("Form", doc.doctype, doc.name);
+                        }
+                    }
+                });
             }, __('Functions'))
         }
         
