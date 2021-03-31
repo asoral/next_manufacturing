@@ -152,4 +152,17 @@ frappe.ui.form.on("Job Card",{
 			}).addClass("btn-primary");
 		}
 	},
+    status: function(frm){
+        console.log("running........")
+        frm.call({
+            method: "next_manufacturing.next_manufacturing.custom_job_card.change_status_to_wo",
+            args: {
+                wo : frm.doc.work_order,
+                status: frm.doc.status
+            },
+            callback: function(r){
+                frm.reload_doc()
+            }
+        });
+    }
 });

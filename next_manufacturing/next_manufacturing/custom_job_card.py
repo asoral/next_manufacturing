@@ -154,6 +154,16 @@ def add_additional_fabric_in_job_card(doc_name, item_code, required_qty, warehou
         add_additional_fabric(job.work_order, item_code, required_qty, warehouse)
     return True
 
+@frappe.whitelist()
+def change_status_to_wo(wo,status):
+    if status == 'Work In Progress':
+        print('yes')
+        q = """update `tabWork Order` set status = 'In Process' where name = '{0}';""".format(wo)
+        print(q)
+        frappe.db.sql(q)
+        frappe.db.commit()
+        print('ok')
+
 def status_job_card_status(doc, method):
     doc.status = "Open"
     doc.db_update()
