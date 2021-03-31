@@ -1,4 +1,7 @@
 frappe.ui.form.on("Work Order", {
+    onload: function(frm){
+        set_line_data(frm)
+    },
     refresh: function(frm){
         set_type(frm)
         set_line_data(frm)
