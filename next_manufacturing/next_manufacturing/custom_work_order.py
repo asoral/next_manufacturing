@@ -105,6 +105,7 @@ def after_insert(self,method):
         if itm.specific_gravity:
             sg += itm.specific_gravity
             cnt += 1
+        if itm.weight_per_unit > 0:
             bmw += itm.required_qty * itm.weight_per_unit
     if sg > 0 and cnt > 0:
         self.specific_gravity = sg/cnt
@@ -113,7 +114,7 @@ def after_insert(self,method):
     rm = 0.0
     for itm in self.required_items:
         if itm.type == "RM":
-            rm += float(itm.required_qty) * float(itm.weight_per_unit)
+            rm += float(itm.consumed_qty) * float(itm.weight_per_unit)
     self.rm_weight = rm
 
     self.fg_weight = self.qty * self.weight_per_unit
@@ -188,7 +189,7 @@ def add_additional_fabric(doc_name, item_code, required_qty, warehouse=None):
             "source_warehouse": warehouse,
             "required_qty":required_qty,
             "additional_material": 1,
-            "include_item_in_manufacturing": 1
+            "include_item_in_manufacturing": 1,
         })
         wo.flags.ignore_validate_update_after_submit = True
         wo.set_available_qty()
@@ -454,3 +455,7 @@ def show_btn(bom):
     if(doc.allow_adding_items == 1):
         btn = True
     return btn
+
+@frappe.whitelist()
+def get_type(bom, item_code):
+    return frappe.db.get_value("BOM Item", {"parent":bom,"item_code":item_code},["type"])
