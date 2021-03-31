@@ -105,8 +105,15 @@ class MaterialConsumption(Document):
                             # in stock uom
                             se_item.conversion_factor = 1.00
                             total_transfer_qty += line.get('qty_to_consume')
+                # calculate material as per yeild
+                bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
+                
+                if(bom_yeild > 0):
+                    calculated_qty = total_transfer_qty * bom_yeild
+                else:
+                    calculated_qty = total_transfer_qty
                 stock_entry.from_bom = 1
-                stock_entry.fg_completed_qty = total_transfer_qty
+                stock_entry.fg_completed_qty = total_transfer_qty * bom_yeild
                 stock_entry.set_actual_qty()
                 stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
                 stock_entry.insert(ignore_permissions=True)
@@ -148,8 +155,14 @@ class MaterialConsumption(Document):
                 # in stock uom
                 se_item.conversion_factor = res.conversion_factor
                 total_transfer_qty += res.picked_qty
+            bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
+            
+            if(bom_yeild > 0):
+                calculated_qty = total_transfer_qty * bom_yeild
+            else:
+                calculated_qty = total_transfer_qty
             stock_entry.from_bom = 1
-            stock_entry.fg_completed_qty = total_transfer_qty
+            stock_entry.fg_completed_qty = calculated_qty
             stock_entry.set_actual_qty()
             stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
             stock_entry.insert(ignore_permissions=True)
