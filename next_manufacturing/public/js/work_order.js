@@ -3,8 +3,6 @@ frappe.ui.form.on("Work Order", {
         set_line_data(frm)
     },
     refresh: function(frm){
-        set_type(frm)
-        set_line_data(frm)
         frm.remove_custom_button("Start")
         frm.remove_custom_button("Create Pick List")
         cur_frm.page.get_inner_group_button(__("Status")).find("button").addClass("hide");
@@ -72,7 +70,8 @@ frappe.ui.form.on("Work Order", {
                 });
             }, __('Functions'))
         }
-        
+        set_type(frm)
+        set_line_data(frm)
     }
 })
 
