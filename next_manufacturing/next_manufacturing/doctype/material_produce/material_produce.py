@@ -120,18 +120,19 @@ class MaterialProduce(Document):
                     qty = res.transferred_qty - res.consumed_qty
                     stock_entry.completed_work_order = 1
                 itm_doc = frappe.get_doc("Item",res.item_code)
-                se_item = stock_entry.append("items")
-                se_item.item_code = res.item_code
-                se_item.qty = qty
-                se_item.s_warehouse = wo.wip_warehouse
-                se_item.item_name = itm_doc.item_name
-                se_item.description = itm_doc.description
-                se_item.uom = itm_doc.stock_uom
-                se_item.stock_uom = itm_doc.stock_uom
-                se_item.expense_account = item_expense_account or expense_account
-                se_item.cost_center = item_cost_center or cost_center
-                # in stock uom
-                se_item.conversion_factor = 1.00
+                if qty > 0:
+                    se_item = stock_entry.append("items")
+                    se_item.item_code = res.item_code
+                    se_item.qty = qty
+                    se_item.s_warehouse = wo.wip_warehouse
+                    se_item.item_name = itm_doc.item_name
+                    se_item.description = itm_doc.description
+                    se_item.uom = itm_doc.stock_uom
+                    se_item.stock_uom = itm_doc.stock_uom
+                    se_item.expense_account = item_expense_account or expense_account
+                    se_item.cost_center = item_cost_center or cost_center
+                    # in stock uom
+                    se_item.conversion_factor = 1.00
         stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
         for res in self.material_produce_item:
             if res.data:
@@ -153,21 +154,22 @@ class MaterialProduce(Document):
                         frappe.throw(_("Please update default Cost Center for company {0}").format(self.company))
 
                     itm_doc = frappe.get_doc("Item", line.get('item_code'))
-                    se_item = stock_entry.append("items")
-                    se_item.item_code = line.get('item_code')
-                    se_item.qty = line.get('qty_produced')
-                    se_item.t_warehouse = line.get('t_warehouse')
-                    se_item.item_name = itm_doc.item_name
-                    se_item.description = itm_doc.description
-                    se_item.uom = res.uom
-                    se_item.stock_uom = res.uom
-                    se_item.batch_no = batch_no
-                    se_item.expense_account = item_expense_account or expense_account
-                    se_item.cost_center = item_cost_center or cost_center
-                    se_item.is_finished_item = 1 if res.type == 'FG' else 0
-                    se_item.is_scrap_item = 1 if res.type == 'Scrap' else 0
-                    # in stock uom
-                    se_item.conversion_factor = 1.00
+                    if line.get('qty_produced') > 0:
+                        se_item = stock_entry.append("items")
+                        se_item.item_code = line.get('item_code')
+                        se_item.qty = line.get('qty_produced')
+                        se_item.t_warehouse = line.get('t_warehouse')
+                        se_item.item_name = itm_doc.item_name
+                        se_item.description = itm_doc.description
+                        se_item.uom = res.uom
+                        se_item.stock_uom = res.uom
+                        se_item.batch_no = batch_no
+                        se_item.expense_account = item_expense_account or expense_account
+                        se_item.cost_center = item_cost_center or cost_center
+                        se_item.is_finished_item = 1 if res.type == 'FG' else 0
+                        se_item.is_scrap_item = 1 if res.type == 'Scrap' else 0
+                        # in stock uom
+                        se_item.conversion_factor = 1.00
             # if res.type == "FG":
             #     total_transfer_qty += res.qty_produced
         stock_entry.from_bom = 1

@@ -36,7 +36,7 @@ frappe.ui.form.on("Work Order", {
                 var usr = frappe.session.user
                 frappe.new_doc("Additional Items", {"work_order" : frm.doc.name, "user": usr, 'date': frappe.datetime.now_date()})
             }, __('Functions'))
-            frm.add_custom_button(__('Partial'),function() {
+            frm.add_custom_button(__('Produce Partial Qty'),function() {
                 frappe.call({
                     method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_produce",
                     args: {
@@ -51,7 +51,7 @@ frappe.ui.form.on("Work Order", {
                     }
                 });
             }, __('Functions'))
-            frm.add_custom_button(__('Complete'),function() {
+            frm.add_custom_button(__('Complete Production'),function() {
                 frappe.call({
                     method: "next_manufacturing.next_manufacturing.custom_work_order.make_material_produce",
                     args: {
