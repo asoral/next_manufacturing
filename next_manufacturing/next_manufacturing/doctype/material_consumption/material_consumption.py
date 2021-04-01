@@ -109,7 +109,7 @@ class MaterialConsumption(Document):
                 bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
                 
                 if(bom_yeild > 0):
-                    calculated_qty = total_transfer_qty * bom_yeild
+                    calculated_qty = (total_transfer_qty * bom_yeild) / 100
                 else:
                     calculated_qty = total_transfer_qty
                 stock_entry.from_bom = 1
@@ -158,7 +158,7 @@ class MaterialConsumption(Document):
             bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
             
             if(bom_yeild > 0):
-                calculated_qty = total_transfer_qty * bom_yeild
+                calculated_qty = (total_transfer_qty * bom_yeild)%100
             else:
                 calculated_qty = total_transfer_qty
             stock_entry.from_bom = 1
