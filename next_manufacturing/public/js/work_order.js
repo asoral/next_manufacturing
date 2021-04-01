@@ -1,6 +1,7 @@
 frappe.ui.form.on("Work Order", {
     onload: function(frm){
         set_line_data(frm)
+        frm.remove_custom_button("Finish")
     },
     refresh: function(frm){
         frm.remove_custom_button("Start")
