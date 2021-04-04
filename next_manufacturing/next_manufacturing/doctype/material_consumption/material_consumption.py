@@ -115,10 +115,11 @@ class MaterialConsumption(Document):
                 stock_entry.from_bom = 1
                 stock_entry.fg_completed_qty = total_transfer_qty * bom_yeild
                 stock_entry.set_actual_qty()
-                stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
+                stock_entry.calculate_rate_and_amount()
                 stock_entry.insert(ignore_permissions=True)
                 stock_entry.validate()
-                stock_entry.flags.ignore_validate_update_after_submit = True
+                # did not understand thats why removing
+                #stock_entry.flags.ignore_validate_update_after_submit = True
                 stock_entry.submit()
         else:
             stock_entry = frappe.new_doc("Stock Entry")
@@ -126,7 +127,7 @@ class MaterialConsumption(Document):
             stock_entry.job_card = self.job_card
             stock_entry.material_consumption = self.name
             stock_entry.company = self.company
-            stock_entry.stock_entry_type = "Material Transfer for Manufacture"
+            stock_entry.stock_entry_type = "Material Consumption for Manufacture"
             total_transfer_qty = 0
             for res in self.pick_list_item:
                 expense_account, cost_center = \
@@ -164,10 +165,10 @@ class MaterialConsumption(Document):
             stock_entry.from_bom = 1
             stock_entry.fg_completed_qty = calculated_qty
             stock_entry.set_actual_qty()
-            stock_entry.calculate_rate_and_amount(raise_error_if_no_rate=False)
+            stock_entry.calculate_rate_and_amount()
             stock_entry.insert(ignore_permissions=True)
             stock_entry.validate()
-            stock_entry.flags.ignore_validate_update_after_submit = True
+            #stock_entry.flags.ignore_validate_update_after_submit = True
             stock_entry.submit()
 
 @frappe.whitelist()
