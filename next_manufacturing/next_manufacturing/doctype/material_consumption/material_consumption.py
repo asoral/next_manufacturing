@@ -119,7 +119,7 @@ class MaterialConsumption(Document):
                 stock_entry.insert(ignore_permissions=True)
                 stock_entry.validate()
                 # did not understand thats why removing
-                #stock_entry.flags.ignore_validate_update_after_submit = True
+                stock_entry.flags.ignore_validate_update_after_submit = True
                 stock_entry.submit()
         else:
             stock_entry = frappe.new_doc("Stock Entry")
@@ -168,7 +168,7 @@ class MaterialConsumption(Document):
             stock_entry.calculate_rate_and_amount()
             stock_entry.insert(ignore_permissions=True)
             stock_entry.validate()
-            #stock_entry.flags.ignore_validate_update_after_submit = True
+            stock_entry.flags.ignore_validate_update_after_submit = True
             stock_entry.submit()
 
 @frappe.whitelist()
