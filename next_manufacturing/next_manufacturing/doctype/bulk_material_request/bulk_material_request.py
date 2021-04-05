@@ -26,7 +26,7 @@ class BulkMaterialrequest(Document):
 			mr.insert()
 			mr.submit()
 	def get_item_list(self):
-		all_work_order = frappe.db.get_all("Work Order", {"rm_store_warehouse": self.rm_store_warehouse, "source_warehouse":self.source_warehouse,"production_item": self.item_to_manufacture, "status":['!=','Complete']},['name'])
+		all_work_order = frappe.db.get_all("Work Order", {"rm_store_warehouse": self.rm_store_warehouse, "source_warehouse":self.source_warehouse, "status":['!=','Complete']},['name'])
 		item_list = []
 		for wo in all_work_order:
 			query = """select item_code,required_qty from `tabWork Order Item` where parent='{0}';""".format(wo.get('name'))
