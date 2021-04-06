@@ -8,7 +8,7 @@ frappe.ui.form.on("Work Order", {
         frm.remove_custom_button("Create Pick List")
         cur_frm.page.get_inner_group_button(__("Status")).find("button").addClass("hide");
         //cur_frm.page.get_inner_group_button(__("Create Pick List")).find("button").addClass("hide");
-        if(frm.doc.status == "Submitted" || frm.doc.status == "In Process"){
+        if(frm.doc.status == "Submitted" || frm.doc.status == "In Process" || frm.doc.status == "Not Started" || frm.doc.status == "Draft"){
             frm.add_custom_button(__('Material Request'),function() {
                 make_material_request(frm,frm.doc.status)
             }, __('Functions'))
@@ -33,10 +33,8 @@ frappe.ui.form.on("Work Order", {
             }, __('Functions'))
 
         }
-        if(frm.doc.status == "In Process"){
+        if(frm.doc.status == "In Process" || frm.doc.status == "Not Started" || frm.doc.status == "Draft"){
             frm.add_custom_button(__('Add Additional Items'),function() {
-                console.log('****', frappe.session.user)
-                console.log(frappe.datetime.now_date())
                 var usr = frappe.session.user
                 frappe.new_doc("Additional Items", {"work_order" : frm.doc.name, "user": usr, 'date': frappe.datetime.now_date()})
             }, __('Functions'))
@@ -73,6 +71,15 @@ frappe.ui.form.on("Work Order", {
         }
         set_type(frm)
         set_line_data(frm)
+    },
+    before_save: function(frm,cdt,cdn){
+        if(frm.doc.source_warehouse){
+            var table = locals[cdt][cdn].required_items
+            table.map(item => {
+                item.source_warehouse = frm.doc.source_warehouse
+            })
+            frm.refresh_field("required_items")
+        }
     }
 })
 
