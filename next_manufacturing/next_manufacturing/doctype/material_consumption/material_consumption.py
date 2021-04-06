@@ -83,6 +83,10 @@ class MaterialConsumption(Document):
                     if res.data:
                         for line in json.loads(res.data):
                             expense_account, cost_center = frappe.db.get_values("Company", self.company, ["default_expense_account", "cost_center"])[0]
+                            
+                            get_wo_doc = frappe.get_doc("Work Order",self.work_order)
+                            
+                            
                             item_expense_account, item_cost_center = frappe.db.get_value("Item Default",
                                                                             {'parent': line.get('item_code'), 'company': self.company},
                                                                                          ["expense_account", "buying_cost_center"])
@@ -101,7 +105,9 @@ class MaterialConsumption(Document):
                             se_item.stock_uom = line.get('stock_uom')
                             se_item.batch_no = line.get('batch_no')
                             se_item.expense_account = item_expense_account or expense_account
-                            se_item.cost_center = item_cost_center or cost_center
+                            #se_item.cost_center = item_cost_center or cost_center
+                            se_item.cost_center = get_wo_doc.rm_cost_center
+            
                             # in stock uom
                             se_item.conversion_factor = 1.00
                             total_transfer_qty += line.get('qty_to_consume')
@@ -138,6 +144,8 @@ class MaterialConsumption(Document):
                                                                               'company': self.company},
                                                                              ["expense_account",
                                                                               "buying_cost_center"])
+                get_wo_doc = frappe.get_doc("Work Order",self.work_order)
+
                 if not cost_center and not item_cost_center:
                     frappe.throw(_("Please update default Cost Center for company {0}").format(self.company))
 
@@ -153,7 +161,8 @@ class MaterialConsumption(Document):
                 se_item.stock_uom = res.stock_uom
                 se_item.batch_no = res.batch_no
                 se_item.expense_account = item_expense_account or expense_account
-                se_item.cost_center = item_cost_center or cost_center
+                #se_item.cost_center = item_cost_center or cost_center
+                se_item.cost_center = get_wo_doc.rm_cost_center
                 # in stock uom
                 se_item.conversion_factor = res.conversion_factor
                 total_transfer_qty += res.picked_qty
@@ -226,11 +235,14 @@ def get_available_qty_data(line_id, company, item_code, warehouse, has_batch_no=
 
 @frappe.whitelist()
 def add_pick_list_item(doc_name,pick_list):
-    #is_existing_doc = frappe.db.get_value("Material Consumption", {'name':doc_name}, ['name'])
     frappe.db.sql("delete from `tabPick List Item` where parent = %s", (doc_name))
     pick_list = frappe.get_doc("Pick List",pick_list)
+    try:
+        doc = frappe.get_doc("Material Consumption", doc_name)
+    except:
+        frappe.throw(_("Please save this document before adding any item"))
     #if is_existing_doc:
-    doc = frappe.get_doc("Material Consumption", doc_name)
+    
     for res in pick_list.locations:
         doc.append('pick_list_item',{
             'item_code': res.item_code,
