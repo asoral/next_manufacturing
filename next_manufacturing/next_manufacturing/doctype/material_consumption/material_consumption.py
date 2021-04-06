@@ -225,7 +225,7 @@ def get_available_qty_data(line_id, company, item_code, warehouse, has_batch_no=
 @frappe.whitelist()
 def add_pick_list_item(doc_name,pick_list):
     frappe.db.sql("delete from `tabPick List Item` where parent = %s", (doc_name))
-    doc = frappe.get_doc("Material Consumption", doc_name)
+    doc = frappe.new_doc("Material Consumption")
     pick_list = frappe.get_doc("Pick List",pick_list)
     for res in pick_list.locations:
         doc.append('pick_list_item',{
@@ -247,4 +247,5 @@ def add_pick_list_item(doc_name,pick_list):
             'material_request_item': res.material_request_item
         })
         doc.type = 'Pick List'
-        doc.save(ignore_permissions=True)
+        doc.insert(ignore_permissions=True)
+        #doc.save(ignore_permissions=True)
