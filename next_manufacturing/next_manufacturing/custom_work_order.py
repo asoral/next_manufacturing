@@ -105,8 +105,9 @@ def after_insert(self,method):
         if itm.specific_gravity:
             sg += itm.specific_gravity
             cnt += 1
-        if itm.weight_per_unit > 0:
-            bmw += itm.required_qty * itm.weight_per_unit
+        if itm.get("weight_per_unit"):
+            if itm.weight_per_unit > 0:
+                bmw += itm.required_qty * itm.weight_per_unit
     if sg > 0 and cnt > 0:
         self.specific_gravity = sg/cnt
         self.bom_weight = bmw
@@ -304,6 +305,8 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
     }, target_doc)
     doc.for_qty = for_qty
     doc.set_item_locations()
+    print("********* doc"*200)
+    print(doc)
     return doc
 
 @frappe.whitelist()
