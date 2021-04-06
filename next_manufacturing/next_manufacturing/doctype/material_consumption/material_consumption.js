@@ -4,18 +4,18 @@
 frappe.ui.form.on('Material Consumption', {
     before_save: function(frm) {
         frm.clear_table('material_consumption_detail');
-        frappe.call({
-            method: 'next_manufacturing.next_manufacturing.doctype.material_consumption.material_consumption.get_total_weight',
-            args: {
-                'table': frm.doc.pick_list_item
-            },
-            callback: function(resp){
-                if(resp.message){
-                    console.log('***************')
-                    console.log(resp.message)
-                }
-            }
-        })
+        // frappe.call({
+        //     method: 'next_manufacturing.next_manufacturing.doctype.material_consumption.material_consumption.get_total_weight',
+        //     args: {
+        //         'table': frm.doc.pick_list_item
+        //     },
+        //     callback: function(resp){
+        //         if(resp.message){
+        //             console.log('***************')
+        //             console.log(resp.message)
+        //         }
+        //     }
+        // })
 
     },
     assign_material: function(frm){
@@ -60,32 +60,32 @@ frappe.ui.form.on('Material Consumption', {
                     },
                     callback: function(r){
                         frm.reload_doc()
-                        if(r.message){
-                            frm.work_order = r.message.wo
-                            frm.t_warehouse = r.message.t_warehouse
-                            frm.refresh_field("t_warehouse")
-                            frm.refresh_field('work_order')
-                            var row = frm.add_child("pick_list_item");
-                            r.message.item_list.map(i => {
-                                row.item_code = i.item_code,
-                                row.item_name = i.item_name,
-                                row.description = i.description,
-                                row.item_group = i.item_group,
-                                row.warehouse = i.warehouse,
-                                row.qty = i.qty,
-                                row.stock_qty = i.stock_qty,
-                                row.picked_qty = i.picked_qty,
-                                row.uom = i.uom,
-                                row.stock_uom = i.stock_uom,
-                                row.serial_no = i.serial_no,
-                                row.batch_no = i.batch_no,
-                                row.sales_order = i.sales_order,
-                                row.sales_order_item = i.sales_order_item,
-                                row.material_request = i.material_request,
-                                row.material_request_item = i.material_request_item
-                            })
-                            frm.refresh_field('pick_list_item')
-                        }
+                        // if(r.message){
+                        //     frm.work_order = r.message.wo
+                        //     frm.t_warehouse = r.message.t_warehouse
+                        //     frm.refresh_field("t_warehouse")
+                        //     frm.refresh_field('work_order')
+                        //     var row = frm.add_child("pick_list_item");
+                        //     r.message.item_list.map(i => {
+                        //         row.item_code = i.item_code,
+                        //         row.item_name = i.item_name,
+                        //         row.description = i.description,
+                        //         row.item_group = i.item_group,
+                        //         row.warehouse = i.warehouse,
+                        //         row.qty = i.qty,
+                        //         row.stock_qty = i.stock_qty,
+                        //         row.picked_qty = i.picked_qty,
+                        //         row.uom = i.uom,
+                        //         row.stock_uom = i.stock_uom,
+                        //         row.serial_no = i.serial_no,
+                        //         row.batch_no = i.batch_no,
+                        //         row.sales_order = i.sales_order,
+                        //         row.sales_order_item = i.sales_order_item,
+                        //         row.material_request = i.material_request,
+                        //         row.material_request_item = i.material_request_item
+                        //     })
+                        //     frm.refresh_field('pick_list_item')
+                        // }
                     }
                 });
             },

@@ -226,42 +226,42 @@ def get_available_qty_data(line_id, company, item_code, warehouse, has_batch_no=
 
 @frappe.whitelist()
 def add_pick_list_item(doc_name,pick_list):
-    is_existing_doc = frappe.db.get_value("Material Consumption", {'name':doc_name}, ['name'])
+    #is_existing_doc = frappe.db.get_value("Material Consumption", {'name':doc_name}, ['name'])
     frappe.db.sql("delete from `tabPick List Item` where parent = %s", (doc_name))
     pick_list = frappe.get_doc("Pick List",pick_list)
-    if is_existing_doc:
-        doc = frappe.get_doc("Material Consumption", doc_name)
-        for res in pick_list.locations:
-            doc.append('pick_list_item',{
-                'item_code': res.item_code,
-                'item_name': res.item_name,
-                'description': res.description,
-                'item_group': res.item_group,
-                'warehouse': res.warehouse,
-                'qty': res.qty,
-                'stock_qty': res.stock_qty,
-                'picked_qty': res.picked_qty,
-                'uom': res.uom,
-                'stock_uom': res.stock_uom,
-                'serial_no': res.serial_no,
-                'batch_no': res.batch_no,
-                'sales_order': res.sales_order,
-                'sales_order_item': res.sales_order_item,
-                'material_request': res.material_request,
-                'material_request_item': res.material_request_item
-            })
-            doc.type = 'Pick List'
-            doc.save(ignore_permissions=True)
-    else:
-        data = {}
-        name = pick_list.get('work_order')
-        if not name:
-            frappe.throw("Work Order not found for selected pick list")
-        wo_doc = frappe.get_doc('Work Order',name)
-        data['wo'] = name
-        data['t_warehouse'] = wo_doc.wip_warehouse
-        data['item_list']  = pick_list.locations
-        return data
+    #if is_existing_doc:
+    doc = frappe.get_doc("Material Consumption", doc_name)
+    for res in pick_list.locations:
+        doc.append('pick_list_item',{
+            'item_code': res.item_code,
+            'item_name': res.item_name,
+            'description': res.description,
+            'item_group': res.item_group,
+            'warehouse': res.warehouse,
+            'qty': res.qty,
+            'stock_qty': res.stock_qty,
+            'picked_qty': res.picked_qty,
+            'uom': res.uom,
+            'stock_uom': res.stock_uom,
+            'serial_no': res.serial_no,
+            'batch_no': res.batch_no,
+            'sales_order': res.sales_order,
+            'sales_order_item': res.sales_order_item,
+            'material_request': res.material_request,
+            'material_request_item': res.material_request_item
+        })
+        doc.type = 'Pick List'
+        doc.save(ignore_permissions=True)
+    # else:
+    #     data = {}
+    #     name = pick_list.get('work_order')
+    #     if not name:
+    #         frappe.throw("Work Order not found for selected pick list")
+    #     wo_doc = frappe.get_doc('Work Order',name)
+    #     data['wo'] = name
+    #     data['t_warehouse'] = wo_doc.wip_warehouse
+    #     data['item_list']  = pick_list.locations
+    #     return data
 
 
 @frappe.whitelist()
