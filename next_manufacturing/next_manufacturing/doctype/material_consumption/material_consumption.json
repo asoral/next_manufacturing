@@ -10,6 +10,7 @@
   "work_order",
   "job_card",
   "t_warehouse",
+  "weight",
   "section_break_4",
   "company",
   "type",
@@ -32,14 +33,6 @@
    "label": "Sereis",
    "options": "MC-.YYYY.-.####",
    "reqd": 1
-  },
-  {
-   "fieldname": "work_order",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Work ORder",
-   "options": "Work Order",
-   "read_only": 1
   },
   {
    "fieldname": "job_card",
@@ -152,12 +145,24 @@
    "label": "Cost of Consumption",
    "options": "Company:company:default_currency",
    "read_only": 1
+  },
+  {
+   "fieldname": "work_order",
+   "fieldtype": "Link",
+   "label": "Work Order",
+   "options": "Work Order"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Data",
+   "label": "Weight",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-03-05 18:38:37.442053",
+ "modified": "2021-04-06 21:29:01.224514",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Consumption",

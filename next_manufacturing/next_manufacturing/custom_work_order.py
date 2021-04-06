@@ -97,11 +97,13 @@ class CustomWorkOrder(WorkOrder):
                 # frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
 
 def after_insert(self,method):
+    print("******************************####")
     sg = 0.0
     cnt = 0
     bmw = 0.0
 
     for itm in self.required_items:
+        print(itm.get("required_qty"))
         if itm.specific_gravity:
             sg += itm.specific_gravity
             cnt += 1
@@ -305,8 +307,6 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
     }, target_doc)
     doc.for_qty = for_qty
     doc.set_item_locations()
-    print("********* doc"*200)
-    print(doc)
     return doc
 
 @frappe.whitelist()

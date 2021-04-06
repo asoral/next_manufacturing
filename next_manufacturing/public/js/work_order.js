@@ -77,6 +77,7 @@ frappe.ui.form.on("Work Order", {
             var table = locals[cdt][cdn].required_items
             table.map(item => {
                 item.source_warehouse = frm.doc.source_warehouse
+                item.required_qty = item.required_qty
             })
             frm.refresh_field("required_items")
         }

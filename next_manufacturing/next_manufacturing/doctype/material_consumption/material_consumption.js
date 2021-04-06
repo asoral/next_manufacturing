@@ -4,6 +4,19 @@
 frappe.ui.form.on('Material Consumption', {
     before_save: function(frm) {
         frm.clear_table('material_consumption_detail');
+        frappe.call({
+            method: 'next_manufacturing.next_manufacturing.doctype.material_consumption.material_consumption.get_total_weight',
+            args: {
+                'table': frm.doc.pick_list_item
+            },
+            callback: function(resp){
+                if(resp.message){
+                    console.log('***************')
+                    console.log(resp.message)
+                }
+            }
+        })
+
     },
     assign_material: function(frm){
         frappe.call({
@@ -48,8 +61,10 @@ frappe.ui.form.on('Material Consumption', {
                     callback: function(r){
                         frm.reload_doc()
                         if(r.message){
+                            frm.work_order = r.message.wo
                             frm.t_warehouse = r.message.t_warehouse
                             frm.refresh_field("t_warehouse")
+                            frm.refresh_field('work_order')
                             var row = frm.add_child("pick_list_item");
                             r.message.item_list.map(i => {
                                 row.item_code = i.item_code,

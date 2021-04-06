@@ -128,7 +128,7 @@ class MaterialConsumption(Document):
             stock_entry.job_card = self.job_card
             stock_entry.material_consumption = self.name
             stock_entry.company = self.company
-            stock_entry.stock_entry_type = "Material Consumption for Manufacture"
+            stock_entry.stock_entry_type = "Material Transfer for Manufacture"
             total_transfer_qty = 0
             for res in self.pick_list_item:
                 expense_account, cost_center = \
@@ -158,9 +158,11 @@ class MaterialConsumption(Document):
                 se_item.conversion_factor = res.conversion_factor
                 total_transfer_qty += res.picked_qty
             bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
-            
-            if(bom_yeild > 0):
-                calculated_qty = (total_transfer_qty * bom_yeild)%100
+            if bom_yeild:
+                if(bom_yeild > 0):
+                    calculated_qty = (total_transfer_qty * bom_yeild)%100
+                else:
+                    calculated_qty = total_transfer_qty
             else:
                 calculated_qty = total_transfer_qty
             stock_entry.from_bom = 1
@@ -251,8 +253,6 @@ def add_pick_list_item(doc_name,pick_list):
             doc.type = 'Pick List'
             doc.save(ignore_permissions=True)
     else:
-        # print("*****************")
-        # print(pick_list.get('work_order'))
         data = {}
         name = pick_list.get('work_order')
         if not name:
@@ -261,5 +261,9 @@ def add_pick_list_item(doc_name,pick_list):
         data['wo'] = name
         data['t_warehouse'] = wo_doc.wip_warehouse
         data['item_list']  = pick_list.locations
-        #print(wo_doc)
         return data
+
+
+@frappe.whitelist()
+def get_total_weight(table):
+    t = json.loads(table)
