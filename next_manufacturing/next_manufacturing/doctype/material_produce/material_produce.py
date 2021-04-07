@@ -21,9 +21,10 @@ class MaterialProduce(Document):
                 line_id = res.line_ref
 
             l_doc = frappe.get_doc("Material Produce Item", line_id)
-            if l_doc.qty_produced:
-                if total_qty > l_doc.qty_produced:
-                    frappe.throw(_("Can not allow total produced qty greater then {0}").format(l_doc.qty_produced))
+            # if l_doc.qty_produced:
+            #     if total_qty > l_doc.qty_produced:
+            #         pass
+                    #frappe.throw(_("Can not allow total produced qty greater then {0}").format(l_doc.qty_produced))
             lst = []
             for res in self.material_produce_details:
                 if res.qty_produced:

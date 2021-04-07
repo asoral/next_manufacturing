@@ -33,35 +33,37 @@ class CustomWorkOrder(WorkOrder):
 
         return status
 
-    def update_work_order_qty(self):
-        """Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
-            based on Stock Entry"""
+    # def update_work_order_qty(self):
+    #     """Update **Manufactured Qty** and **Material Transferred for Qty** in Work Order
+    #         based on Stock Entry"""
 
-        allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
-                                                              "overproduction_percentage_for_work_order"))
+    #     allowance_percentage = flt(frappe.db.get_single_value("Manufacturing Settings",
+    #                                                           "overproduction_percentage_for_work_order"))
 
-        for purpose, fieldname in (("Manufacture", "produced_qty"),
-                                   ("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
-            if (purpose == 'Material Transfer for Manufacture' and
-                    self.operations and self.transfer_material_against == 'Job Card'):
-                continue
+    #     for purpose, fieldname in (("Manufacture", "produced_qty"),
+    #                                ("Material Transfer for Manufacture", "material_transferred_for_manufacturing")):
+            
+    #         if (purpose == 'Material Transfer for Manufacture' and
+    #                 self.operations and self.transfer_material_against == 'Job Card'):
+    #             continue
 
-            qty = flt(frappe.db.sql("""select sum(fg_completed_qty) from `tabStock Entry` where work_order=%s and docstatus=1 and purpose=%s""", (self.name, purpose))[0][0])
+    #         qty = flt(frappe.db.sql("""select sum(fg_completed_qty) from `tabStock Entry` where work_order=%s and docstatus=1 and purpose=%s""", (self.name, purpose))[0][0])
 
-            completed_qty = self.qty + (allowance_percentage / 100 * self.qty)
-            # if qty > completed_qty:
-            #     frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format( \
-            #         self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
+    #         completed_qty = self.qty + (allowance_percentage / 100 * self.qty)
+    #         # if qty > completed_qty:
+    #         #     frappe.throw(_("{0} ({1}) cannot be greater than planned quantity ({2}) in Work Order {3}").format( \
+    #         #         self.meta.get_label(fieldname), qty, completed_qty, self.name), StockOverProductionError)
+    #         print("**************************")
+    #         print(fieldname,qty)
+    #         self.db_set(fieldname, qty)
 
-            self.db_set(fieldname, qty)
+    #         from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
 
-            from erpnext.selling.doctype.sales_order.sales_order import update_produced_qty_in_so_item
+    #         if self.sales_order and self.sales_order_item:
+    #             update_produced_qty_in_so_item(self.sales_order, self.sales_order_item)
 
-            if self.sales_order and self.sales_order_item:
-                update_produced_qty_in_so_item(self.sales_order, self.sales_order_item)
-
-        if self.production_plan:
-            self.update_production_plan_status()
+    #     if self.production_plan:
+    #         self.update_production_plan_status()
 
     def update_required_items(self):
         '''
@@ -109,9 +111,6 @@ def after_insert(self,method):
         if itm.get("weight_per_unit"):
             if itm.weight_per_unit > 0:
                 float_precision = cint(frappe.db.get_default("float_precision")) or 3
-                # itm_qty = format(itm.required_qty,'3f')
-                # print("****************")
-                # print(itm_qty)
                 bmw += flt(itm.required_qty,float_precision) * flt(itm.weight_per_unit)
     if sg > 0 and cnt > 0:
         self.specific_gravity = sg/cnt
