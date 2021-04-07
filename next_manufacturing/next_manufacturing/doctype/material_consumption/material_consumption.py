@@ -179,11 +179,11 @@ class MaterialConsumption(Document):
                 #     total_transfer_qty += line.get('qty_issued')
                 # if self.type == "Pick List":
                 #     total_transfer_qty += line.get('picked_qty')
-                if self.type == "Manual" and line.get('type') == "RM":
+                if self.type == "Manual":
                     qty = line.get('issued_qty') * line.get('weight_per_unit')
                     total_transfer_qty += qty
                 if self.type == "Pick List":
-                    item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":line.get('item_code')}, 'weight_per_unit')
+                    item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":res.get('item_code')}, 'weight_per_unit')
                     if item_master_wigth_per_unit:
                         qty = line.get('picked_qty') * item_master_wigth_per_unit
                         total_transfer_qty += qty
