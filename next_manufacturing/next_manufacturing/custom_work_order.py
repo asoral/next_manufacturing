@@ -6,7 +6,7 @@ from frappe.utils import flt
 from frappe.model.mapper import get_mapped_doc
 import json
 from datetime import datetime
-
+from frappe.utils import flt,cint, cstr, getdate
 class StockOverProductionError(frappe.ValidationError): pass
 
 class CustomWorkOrder(WorkOrder):
@@ -97,19 +97,22 @@ class CustomWorkOrder(WorkOrder):
                 # frappe.throw(_("Completed Qty cannot be greater than 'Qty to Manufacture'"))
 
 def after_insert(self,method):
-    print("******************************####")
     sg = 0.0
     cnt = 0
     bmw = 0.0
 
     for itm in self.required_items:
-        print(itm.get("required_qty"))
+        #print(itm.get("required_qty"))
         if itm.specific_gravity:
             sg += itm.specific_gravity
             cnt += 1
         if itm.get("weight_per_unit"):
             if itm.weight_per_unit > 0:
-                bmw += itm.required_qty * itm.weight_per_unit
+                float_precision = cint(frappe.db.get_default("float_precision")) or 3
+                # itm_qty = format(itm.required_qty,'3f')
+                # print("****************")
+                # print(itm_qty)
+                bmw += flt(itm.required_qty,float_precision) * flt(itm.weight_per_unit)
     if sg > 0 and cnt > 0:
         self.specific_gravity = sg/cnt
         self.bom_weight = bmw
@@ -263,14 +266,16 @@ def make_consume_material(doc_name):
             "has_batch_no": item_doc.has_batch_no,
             "uom": item_doc.stock_uom,
             "status": "Not Assigned",
-            "qty_to_issue": res.required_qty
+            "qty_to_issue": res.required_qty,
+            "weight_per_unit": res.weight_per_unit,
+            "type": res.type
         })
     # mc.insert(ignore_permissions=True)
     return mc.as_dict()
 
 
 @frappe.whitelist()
-def create_pick_list(source_name, target_doc=None, for_qty=None):
+def create_pick_list(source_name,wo, target_doc=None, for_qty=None):
     for_qty = for_qty or json.loads(target_doc).get('for_qty')
     max_finished_goods_qty = frappe.db.get_value('Work Order', source_name, 'qty')
     def update_item_quantity(source, target, source_parent):
@@ -296,15 +301,33 @@ def create_pick_list(source_name, target_doc=None, for_qty=None):
         'Work Order': {
             'doctype': 'Pick List',
             'validation': {
-                'docstatus': ['in', [1, 4]]
+                'docstatus': ['in', [1]]
             }
-        },
-        'Work Order Item': {
-            'doctype': 'Pick List Item',
-            'postprocess': update_item_quantity,
-            'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
-        },
+        }
+        # 'Work Order Item': {
+        #     'doctype': 'Pick List Item',
+        #     'postprocess': update_item_quantity,
+        #     'condition': lambda doc: abs(doc.transferred_qty) < abs(doc.required_qty)
+        # },
     }, target_doc)
+
+    wo_doc = frappe.get_doc('Work Order', wo)
+    for item in wo_doc.get("required_items"):
+        actual_qty_to_pass = item.get("required_qty") - item.get("transferred_qty")
+        item_details = frappe.db.get_value("Item", {"item_code":item.get("item_code")}, ['item_group','description'], as_dict = True)
+        #stock_qty = frappe.db.get_value("Bin", {"item_code":item.get("item_code"), "warehouse":item.get("source_warehouse") }, ['item_group','description'])
+        if actual_qty_to_pass > 0:
+            doc.append("locations", {
+            "item_code": item.get("item_code"),
+            "item_name": item.get("item_name"),
+            "warehouse": item.get("source_warehouse"),
+            "qty": actual_qty_to_pass,
+            "stock_qty": actual_qty_to_pass,      # need to remove gardcoded stock qty
+            "description": item_details.get('description'),
+            'item_group': item_details.get('item_group')
+
+        })
+
     doc.for_qty = for_qty
     doc.set_item_locations()
     return doc

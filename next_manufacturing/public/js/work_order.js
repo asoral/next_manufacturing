@@ -3,7 +3,7 @@ frappe.ui.form.on("Work Order", {
         set_line_data(frm)
         frm.remove_custom_button("Finish")
     },
-    refresh: function(frm){
+    refresh: function(frm,cdt,cdn){
         frm.remove_custom_button("Start")
         frm.remove_custom_button("Create Pick List")
         cur_frm.page.get_inner_group_button(__("Status")).find("button").addClass("hide");
@@ -80,6 +80,7 @@ frappe.ui.form.on("Work Order", {
         if(frm.doc.required_items && frm.doc.allow_alternative_item) {
 			const has_alternative = frm.doc.required_items.find(i => i.allow_alternative_item === 1);
 			if (frm.doc.docstatus == 0 && has_alternative) {
+                // console.log("******** alternate itm")
 				frm.add_custom_button(__('Alternate Item'), () => {
 					erpnext.utils.select_alternate_items({
 						frm: frm,
@@ -144,6 +145,7 @@ function set_type(frm){
 }
 
 function set_line_data(frm){
+    console.log("set_line_data")
     var rm_weight = 0
     var fg_weight = 0
     var table = frm.doc.required_items
@@ -152,11 +154,22 @@ function set_line_data(frm){
             rm_weight += item.consumed_qty * item.weight_per_unit 
         }
     })
-    frm.set_value("rm_weight",rm_weight)
-    var weight = produced_qty * weight_per_uom
-    frm.set_value('fg_weight',weight )
+    frm.rm_weight = rm_weight
+    var weight = 1
+    if (frm.doc.produced_qty && frm.doc.weight_per_uom) {
+        weight = frm.doc.produced_qty * frm.doc.weight_per_uom
+    }
+
+    frm.fg_weight = weight
     var yeild = (weight/rm_weight) * 100
-    frm.set_value('yeild',yeild)
+
+    frm.yeild = yeild
+    // console.log('yeild', yeild)
+    // console.log('weight', weight, frm.doc.produced_qty, frm.doc.weight_per_unit)
+    // frm.refresh_field('rm_weight')
+    // frm.refresh_field('fg_weight')
+    // frm.refresh_field('yeild')
+    //frm.save()
 }
 
 

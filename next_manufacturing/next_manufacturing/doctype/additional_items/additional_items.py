@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe.utils import getdate, now_datetime, nowdate
 from erpnext.manufacturing.doctype.work_order.work_order import WorkOrder
+from frappe.utils import flt,cint, cstr, getdate
 class AdditionalItems(Document):
 	def after_save(self):
 		self.date= nowdate()
@@ -21,7 +22,6 @@ class AdditionalItems(Document):
 					item_list.append(i.get('item_code'))
 			else:
 				query = """select item_code from `tabBOM Item` where parent="{0}";""".format(bom[0].get('bom_no'))
-				print(query)
 				items = frappe.db.sql(query, as_dict = True)
 				for i in items:
 					item_list.append(i.get('item_code'))
@@ -59,8 +59,13 @@ class AdditionalItems(Document):
 				
 				
 				doc = frappe.get_doc("Work Order", self.work_order)
-
-				rate = frappe.db.get_value("Bin", {"item_code":item.get("item"),"warehouse":doc.source_warehouse},['valuation_rate'], as_dict = 1).get('valuation_rate')
+				rate = 0
+				rate_with_warehouse = frappe.db.get_value("Bin", {"item_code":item.get("item"),"warehouse":doc.source_warehouse},['valuation_rate'])
+				if rate_with_warehouse:
+					rate = rate_with_warehouse
+				rate_without_warehouse = frappe.db.get_value("Bin", {"item_code":item.get("item")},['valuation_rate'])
+				if not rate_with_warehouse and rate_without_warehouse:
+					rate = rate_without_warehouse
 				amt = float(item.get("qty")) * float(rate)
 
 				doc.append("required_items", {
