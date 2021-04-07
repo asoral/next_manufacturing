@@ -29,7 +29,15 @@ frappe.ui.form.on("Work Order", {
                 });
             }, __('Functions'))
             frm.add_custom_button(__('Create Pick List'),function() {
-                erpnext.work_order.create_pick_list(frm);
+                //erpnext.work_order.create_pick_list(frm);
+                    return frappe.xcall('next_manufacturing.next_manufacturing.custom_work_order.create_pick_list', {
+                        'source_name': frm.doc.name,
+                        'for_qty': frm.doc.qty,
+                        'wo': frm.doc.name,
+                    }).then(pick_list => {
+                        frappe.model.sync(pick_list);
+                        frappe.set_route('Form', pick_list.doctype, pick_list.name);
+                    });
             }, __('Functions'))
 
         }
@@ -69,6 +77,23 @@ frappe.ui.form.on("Work Order", {
                 });
             }, __('Functions'))
         }
+        if(frm.doc.required_items && frm.doc.allow_alternative_item) {
+			const has_alternative = frm.doc.required_items.find(i => i.allow_alternative_item === 1);
+			if (frm.doc.docstatus == 0 && has_alternative) {
+				frm.add_custom_button(__('Alternate Item'), () => {
+					erpnext.utils.select_alternate_items({
+						frm: frm,
+						child_docname: "required_items",
+						warehouse_field: "source_warehouse",
+						child_doctype: "Work Order Item",
+						original_item_field: "original_item",
+						condition: (d) => {
+							if (d.allow_alternative_item) {return true;}
+						}
+					});
+				});
+			}
+		}
         set_type(frm)
         set_line_data(frm)
     },
@@ -132,4 +157,18 @@ function set_line_data(frm){
     frm.set_value('fg_weight',weight )
     var yeild = (weight/rm_weight) * 100
     frm.set_value('yeild',yeild)
+}
+
+
+function create_pick_list(frm, purpose='Material Transfer for Manufacture') {
+    this.show_prompt_for_qty_input(frm, purpose)
+        .then(data => {
+            return frappe.xcall('erpnext.manufacturing.doctype.work_order.work_order.create_pick_list', {
+                'source_name': frm.doc.name,
+                'for_qty': data.qty
+            });
+        }).then(pick_list => {
+            frappe.model.sync(pick_list);
+            frappe.set_route('Form', pick_list.doctype, pick_list.name);
+        });
 }
