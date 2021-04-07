@@ -39,7 +39,7 @@ class MaterialConsumption(Document):
         return True
 
     def on_submit(self):
-        self.mak_stock_entry()
+        self.make_stock_entry()
         # if self.job_card:
         #     job = frappe.get_doc("Job Card",self.job_card)
         #     for res in self.materials_to_consume:
@@ -61,7 +61,7 @@ class MaterialConsumption(Document):
 
 
 
-    def mak_stock_entry(self):
+    def make_stock_entry(self):
         if self.type == "Manual":
             lst = []
             for res in self.materials_to_consume:
@@ -110,16 +110,25 @@ class MaterialConsumption(Document):
             
                             # in stock uom
                             se_item.conversion_factor = 1.00
-                            total_transfer_qty += line.get('qty_to_consume')
+                            if self.type == "Manual" and line.get('type') == "RM":
+                                qty = line.get('issued_qty') * line.get('weight_per_unit')
+                                total_transfer_qty += qty
+                            if self.type == "Pick List":
+                                item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":line.get('item_code')}, 'weight_per_unit')
+                                if item_master_wigth_per_unit:
+                                    qty = line.get('picked_qty') * item_master_wigth_per_unit
+                                    total_transfer_qty += qty
+                                if not item_master_wigth_per_unit:
+                                    pass
                 # calculate material as per yeild
                 bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
                 
                 if(bom_yeild > 0):
-                    calculated_qty = (total_transfer_qty * bom_yeild) / 100
+                    calculated_qty = (total_transfer_qty) * (bom_yeild/100)
                 else:
                     calculated_qty = total_transfer_qty
                 stock_entry.from_bom = 1
-                stock_entry.fg_completed_qty = total_transfer_qty * bom_yeild
+                stock_entry.fg_completed_qty = calculated_qty
                 stock_entry.set_actual_qty()
                 stock_entry.calculate_rate_and_amount()
                 stock_entry.insert(ignore_permissions=True)
@@ -165,7 +174,21 @@ class MaterialConsumption(Document):
                 se_item.cost_center = get_wo_doc.rm_cost_center
                 # in stock uom
                 se_item.conversion_factor = res.conversion_factor
-                total_transfer_qty += res.picked_qty
+                #total_transfer_qty += res.picked_qty
+                # if self.type == "Manual":
+                #     total_transfer_qty += line.get('qty_issued')
+                # if self.type == "Pick List":
+                #     total_transfer_qty += line.get('picked_qty')
+                if self.type == "Manual" and line.get('type') == "RM":
+                    qty = line.get('issued_qty') * line.get('weight_per_unit')
+                    total_transfer_qty += qty
+                if self.type == "Pick List":
+                    item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":line.get('item_code')}, 'weight_per_unit')
+                    if item_master_wigth_per_unit:
+                        qty = line.get('picked_qty') * item_master_wigth_per_unit
+                        total_transfer_qty += qty
+                    if not item_master_wigth_per_unit:
+                        pass
             bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
             if bom_yeild:
                 if(bom_yeild > 0):

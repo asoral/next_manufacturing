@@ -14,7 +14,9 @@
   "expiry_date_batch",
   "life_left_batch",
   "qty_to_consume",
-  "consume_item"
+  "consume_item",
+  "weight_per_uunit",
+  "type"
  ],
  "fields": [
   {
@@ -97,12 +99,26 @@
   {
    "fieldname": "column_break_5",
    "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight_per_uunit",
+   "fieldtype": "Float",
+   "label": "Weight Per Uunit",
+   "read_only": 1
+  },
+  {
+   "default": "RM",
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "RM\nPKG",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-02-26 16:53:42.781026",
+ "modified": "2021-04-07 19:42:36.539690",
  "modified_by": "Administrator",
  "module": "Next Manufacturing",
  "name": "Material Consumption Detail",
