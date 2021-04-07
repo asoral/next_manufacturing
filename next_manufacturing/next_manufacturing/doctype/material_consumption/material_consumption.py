@@ -185,7 +185,7 @@ class MaterialConsumption(Document):
                 if self.type == "Pick List":
                     item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":res.get('item_code')}, 'weight_per_unit')
                     if item_master_wigth_per_unit:
-                        qty = line.get('picked_qty') * item_master_wigth_per_unit
+                        qty = res.get('picked_qty') * item_master_wigth_per_unit
                         total_transfer_qty += qty
                     if not item_master_wigth_per_unit:
                         pass
