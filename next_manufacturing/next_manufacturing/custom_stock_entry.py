@@ -168,14 +168,14 @@ class CustomStockEntry(StockEntry):
 
 
 def produce_qty(doc, method):
-    if doc.material_produce:
+    if doc.get('material_produce'):
         pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
         pro_doc.produced = 1
         pro_doc.flags.ignore_validate_update_after_submit = True
         pro_doc.db_update()
 
 def cancel_produce_qty(doc, method):
-    if doc.material_produce:
+    if doc.get('material_produce'):
         pro_doc = frappe.get_doc("Material Produce", doc.material_produce)
         pro_doc.produced = 0
         pro_doc.flags.ignore_validate_update_after_submit = True
@@ -201,7 +201,7 @@ def set_material_cost(doc,method):
                 wo.actual_rm_cost += doc.total_outgoing_value
             wo.db_update()
 
-    if doc.material_produce:
+    if doc.get('material_produce'):
         qty_produced = 0
         for res in doc.items:
             if res.is_finished_item:

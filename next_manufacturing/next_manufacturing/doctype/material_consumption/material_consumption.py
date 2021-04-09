@@ -77,7 +77,7 @@ class MaterialConsumption(Document):
                 stock_entry.job_card = self.job_card
                 stock_entry.material_consumption = self.name
                 stock_entry.company = self.company
-                stock_entry.stock_entry_type = "Material Transfer for Manufacture"
+                stock_entry.stock_entry_type = "Material Consumption for Manufacture"
                 total_transfer_qty = 0
                 for res in self.materials_to_consume:
                     if res.data:
@@ -110,16 +110,17 @@ class MaterialConsumption(Document):
             
                             # in stock uom
                             se_item.conversion_factor = 1.00
-                            if self.type == "Manual" and line.get('type') == "RM":
-                                qty = line.get('issued_qty') * line.get('weight_per_unit')
+                            # if self.type == "Manual" and line.get('type') == "RM":
+                            #     qty = line.get('issued_qty') * line.get('weight_per_unit')
+                            #     total_transfer_qty += qty
+                            #if self.type == "Pick List":
+                            item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":line.get('item_code')}, 'weight_per_unit')
+                            if item_master_wigth_per_unit:
+                                qty = line.get('picked_qty') * item_master_wigth_per_unit
                                 total_transfer_qty += qty
-                            if self.type == "Pick List":
-                                item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":line.get('item_code')}, 'weight_per_unit')
-                                if item_master_wigth_per_unit:
-                                    qty = line.get('picked_qty') * item_master_wigth_per_unit
-                                    total_transfer_qty += qty
-                                if not item_master_wigth_per_unit:
-                                    pass
+                            if not item_master_wigth_per_unit:
+                                m = "Please Enter weight per unit for item {0}".format(line.get('item_code'))
+                                frappe.throw(_(m))
                 # calculate material as per yeild
                 bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
                 
@@ -143,7 +144,7 @@ class MaterialConsumption(Document):
             stock_entry.job_card = self.job_card
             stock_entry.material_consumption = self.name
             stock_entry.company = self.company
-            stock_entry.stock_entry_type = "Material Transfer for Manufacture"
+            stock_entry.stock_entry_type = "Material Consumption for Manufacture"
             total_transfer_qty = 0
             for res in self.pick_list_item:
                 expense_account, cost_center = \
@@ -174,27 +175,19 @@ class MaterialConsumption(Document):
                 se_item.cost_center = get_wo_doc.rm_cost_center
                 # in stock uom
                 se_item.conversion_factor = res.conversion_factor
-                #total_transfer_qty += res.picked_qty
-                # if self.type == "Manual":
-                #     total_transfer_qty += line.get('qty_issued')
+            
                 # if self.type == "Pick List":
-                #     total_transfer_qty += line.get('picked_qty')
-                if self.type == "Manual":
-                    qty = line.get('issued_qty') * line.get('weight_per_unit')
+                item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":res.get('item_code')}, 'weight_per_unit')
+                if item_master_wigth_per_unit:
+                    qty = res.get('picked_qty') * item_master_wigth_per_unit
                     total_transfer_qty += qty
-                if self.type == "Pick List":
-                    item_master_wigth_per_unit = frappe.db.get_value("Item", {"item_code":res.get('item_code')}, 'weight_per_unit')
-                    if item_master_wigth_per_unit:
-                        qty = res.get('picked_qty') * item_master_wigth_per_unit
-                        total_transfer_qty += qty
-                    if not item_master_wigth_per_unit:
-                        pass
+                if not item_master_wigth_per_unit:
+                    m = "Please Enter weight per unit for item {0}".format(line.get('item_code'))
+                    frappe.throw(_(m))
             bom_yeild = frappe.db.get_value("Work Order", {"name":self.work_order},['bom_yeild'])
             if bom_yeild:
                 if(bom_yeild > 0):
-                    calculated_qty = (total_transfer_qty * bom_yeild)%100
-                else:
-                    calculated_qty = total_transfer_qty
+                    calculated_qty = (total_transfer_qty) * (bom_yeild/100)
             else:
                 calculated_qty = total_transfer_qty
             stock_entry.from_bom = 1
