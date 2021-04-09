@@ -8,7 +8,13 @@ from frappe.model.mapper import get_mapped_doc
 class OverlapError(frappe.ValidationError): pass
 
 class CustomJobCard(JobCard):
-
+    def validate(self):
+        print("*********************")
+        if self.time_logs:
+            for time in self.time_logs:
+                #print(time.get("completed_qty"))
+                time.completed_qty = self.for_quantity
+    
     def before_submit(self):
         self.status = 'Completed'
 

@@ -92,7 +92,7 @@ doctype_js = {
 override_doctype_class = {
 	# "Stock Entry": "next_manufacturing.next_manufacturing.custom_stock_entry.CustomStockEntry",
 	# "Work Order": "next_manufacturing.next_manufacturing.custom_work_order.CustomWorkOrder",
-	# "Job Card": "next_manufacturing.next_manufacturing.custom_job_card.CustomJobCard"
+	"Job Card": "next_manufacturing.next_manufacturing.custom_job_card.CustomJobCard"
 }
 
 # Document Events
